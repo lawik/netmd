@@ -1,21 +1,68 @@
 # Netmd
 
-**TODO: Add description**
+Drive Sony MiniDisc recorders over NetMD USB from Elixir. A port of
+[netmd-js](https://github.com/cybercase/netmd-js) (the library behind
+Web MiniDisc) cross-referenced against libnetmd from
+[linux-minidisc](https://github.com/linux-minidisc/linux-minidisc),
+running on [circuits_usb](https://github.com/lawik/circuits_usb).
+Linux only, no native code beyond the circuits_usb NIF.
+
+## What works
+
+- Enumerate and open the ~48 known NetMD devices
+- Disc listing: titles (half and full width Shift-JIS), groups, per-track
+  encoding, duration and protection, capacity
+- Playback control, seeking, eject
+- Renaming discs and tracks, erasing and moving tracks
+- Track download (recording to disc) through the secure session,
+  including the open-source EKB and DES retail MAC key negotiation
+- Track upload from an MZ-RH1, with AEA/WAV headers ready for ffmpeg
+
+## Usage
+
+```elixir
+{:ok, device} = Netmd.open()
+
+{:ok, disc} = Netmd.list_content(device)
+IO.puts("#{disc.title}: #{disc.track_count} tracks")
+
+:ok = Netmd.play(device)
+:ok = Netmd.rename_disc(device, "Mix Tape")
+
+# Download audio: raw PCM (16-bit big-endian stereo, 44100 Hz) or
+# pre-encoded ATRAC3 for the LP modes.
+track = %Netmd.Track{title: "New Song", format: :lp2, data: atrac3_data}
+{:ok, %{track: n}} = Netmd.download(device, track)
+
+Netmd.close(device)
+```
+
+The facade delegates to layers that are usable on their own; see the
+module docs of `Netmd.Commands`, `Netmd.Interface`, `Netmd.Session`,
+`Netmd.Device` and `Netmd.Query`.
+
+## Permissions
+
+Accessing `/dev/bus/usb` needs root or a udev rule for your user, e.g.
+
+    SUBSYSTEM=="usb", ATTRS{idVendor}=="054c", MODE="0666"
+
+## Testing
+
+The protocol layers are verified byte-for-byte against golden vectors
+generated from netmd-js itself, and the full flows replay against a
+scripted mock transport. See `TESTING.md`.
 
 ## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `netmd` to your list of dependencies in `mix.exs`:
 
 ```elixir
 def deps do
   [
-    {:netmd, "~> 0.1.0"}
+    {:netmd, github: "lawik/netmd"}
   ]
 end
 ```
 
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/netmd>.
+## License
 
+GPL-2.0, matching the reference implementations this library ports.
