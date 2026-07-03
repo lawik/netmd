@@ -59,13 +59,21 @@ outcome and prints `DEMO_OK` on success.
 | `Netmd` facade + `Netmd.Transport.Usb` | host | usbfs over the `dummy_hcd` host bus |
 | the kernel | link | `dummy_hcd` loops device ↔ host |
 
+### Status
+
+Verified in the circuits_usb VM (Ubuntu 6.8, dummy_hcd): the gadget
+enumerates as a Sony NetMD device and the demo drives `list_content`,
+`device_status`, `rename_disc` and a track `download` over real usbfs,
+printing `DEMO_OK`. The host transport's expected bulk endpoints
+(`0x81` IN, `0x02` OUT) came through unchanged on `dummy_udc`.
+
 ### Caveats
 
-- The host `Netmd.Transport.Usb` expects the NetMD bulk endpoints at
-  `0x81` (IN) and `0x02` (OUT), matching real hardware. The gadget
-  requests those addresses, but a UDC may renumber them; if the demo
-  reports it cannot open the device, check the enumerated descriptor
-  (`lsusb -v`) and reconcile the addresses.
+- `dummy_hcd` must be built against the running kernel. The circuits_usb
+  harness fetches `dummy_hcd.c` for the kernel's `major.minor`; if the
+  prebuilt `.ko` mismatches (symbol/version errors on `insmod`), delete
+  `harness/modules/dummy_hcd/dummy_hcd.{c,ko}` and let it re-fetch.
 - The OTP source build in `setup` takes 10-15 minutes the first time.
-- This VM path has not been run from the development host it was written
-  on; treat the first `demo` run as the validation step.
+- If the demo reports it cannot open the device, check the enumerated
+  descriptor (`lsusb -v`) in case a different UDC renumbered the bulk
+  endpoints away from `0x81`/`0x02`.
