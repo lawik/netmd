@@ -6,6 +6,7 @@ defmodule Netmd.MixProject do
       app: :netmd,
       version: "0.1.0",
       elixir: "~> 1.20",
+      elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "Netmd",
@@ -75,6 +76,9 @@ defmodule Netmd.MixProject do
       ignore_warnings: ".dialyzer_ignore.exs"
     ]
   end
+
+  defp elixirc_paths(:test), do: ["lib", "test/support"]
+  defp elixirc_paths(_env), do: ["lib"]
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do

@@ -1,0 +1,119 @@
+defmodule Netmd.Transport.Usb do
+  @moduledoc """
+  `Netmd.Transport` backed by `CircuitsUsb`.
+
+  Opens the first known NetMD device (or an explicit `:vendor_id` and
+  `:product_id`), detaches any kernel driver and claims interface 0. The
+  endpoints match every known NetMD device: bulk IN `0x81`, bulk OUT `0x02`.
+  """
+
+  @behaviour Netmd.Transport
+
+  alias CircuitsUsb.Descriptor
+  alias Netmd.Devices
+
+  # bmRequestType: vendor type, interface recipient
+  @request_type_out 0x41
+  @request_type_in 0xC1
+
+  @bulk_in_endpoint 0x81
+  @bulk_out_endpoint 0x02
+  @interface 0
+  @control_timeout 1000
+
+  @impl Netmd.Transport
+  def open(opts \\ []) do
+    with {:ok, ref, info} <- find(opts),
+         {:ok, device} <- CircuitsUsb.open(ref) do
+      _ = CircuitsUsb.detach_driver(device, @interface)
+
+      case CircuitsUsb.claim_interface(device, @interface) do
+        :ok ->
+          {:ok, device, info}
+
+        {:error, reason} ->
+          CircuitsUsb.close(device)
+          {:error, reason}
+      end
+    end
+  end
+
+  @impl Netmd.Transport
+  def close(device) do
+    _ = CircuitsUsb.reset(device)
+    _ = CircuitsUsb.release_interface(device, @interface)
+    CircuitsUsb.close(device)
+  end
+
+  @impl Netmd.Transport
+  def control_in(device, request, value, index, length) do
+    CircuitsUsb.control_transfer(
+      device,
+      @request_type_in,
+      request,
+      value,
+      index,
+      length,
+      @control_timeout
+    )
+  end
+
+  @impl Netmd.Transport
+  def control_out(device, request, value, index, data) do
+    case CircuitsUsb.control_transfer(
+           device,
+           @request_type_out,
+           request,
+           value,
+           index,
+           data,
+           @control_timeout
+         ) do
+      {:ok, _written} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @impl Netmd.Transport
+  def bulk_in(device, length, timeout) do
+    CircuitsUsb.bulk_in(device, @bulk_in_endpoint, length, timeout)
+  end
+
+  @impl Netmd.Transport
+  def bulk_out(device, data, timeout) do
+    case CircuitsUsb.bulk_out(device, @bulk_out_endpoint, data, timeout) do
+      {:ok, _written} -> :ok
+      {:error, reason} -> {:error, reason}
+    end
+  end
+
+  defp find(opts) do
+    wanted =
+      case {Keyword.get(opts, :vendor_id), Keyword.get(opts, :product_id)} do
+        {nil, _} -> :any_known
+        {_, nil} -> :any_known
+        {vendor_id, product_id} -> {vendor_id, product_id}
+      end
+
+    case Enum.find_value(CircuitsUsb.list_devices(), &match_ref(&1, wanted)) do
+      nil -> {:error, :not_found}
+      {ref, info} -> {:ok, ref, info}
+    end
+  end
+
+  defp match_ref(ref, wanted) do
+    case ref.descriptor do
+      {:ok, %Descriptor.Device{vendor_id: vendor_id, product_id: product_id}} ->
+        if wanted?(wanted, vendor_id, product_id) do
+          {ref, %{vendor_id: vendor_id, product_id: product_id}}
+        end
+
+      _ ->
+        nil
+    end
+  end
+
+  defp wanted?(:any_known, vendor_id, product_id), do: Devices.known?(vendor_id, product_id)
+  defp wanted?({vendor_id, product_id}, vendor_id, product_id), do: true
+  defp wanted?(_wanted, _vendor_id, _product_id), do: false
+end
