@@ -25,6 +25,33 @@ defmodule Netmd.Crypto do
   def des_cbc_decrypt(key, iv, data),
     do: :crypto.crypto_one_time(:des_cbc, key, iv, data, false)
 
+  @factory_key <<0x00, 0x11, 0x22, 0x33, 0x44, 0x55, 0x66, 0x77>>
+
+  @doc """
+  Encrypt data for an encrypted factory memory transfer.
+
+  Matches the reference: PKCS7-pad to the DES block size, ECB-encrypt with
+  the fixed factory key, then drop the trailing padding block. For
+  block-aligned input (what the callers produce) this is plain ECB.
+  """
+  @spec factory_transfer_encrypt(binary()) :: binary()
+  def factory_transfer_encrypt(data) do
+    padded = pkcs7_pad(data, 8)
+    encrypted = des_ecb_encrypt(@factory_key, padded)
+    binary_part(encrypted, 0, byte_size(encrypted) - 8)
+  end
+
+  @doc """
+  Decrypt data from an encrypted factory memory transfer (block-aligned).
+  """
+  @spec factory_transfer_decrypt(binary()) :: binary()
+  def factory_transfer_decrypt(data), do: des_ecb_decrypt(@factory_key, data)
+
+  defp pkcs7_pad(data, block_size) do
+    pad = block_size - rem(byte_size(data), block_size)
+    data <> :binary.copy(<<pad>>, pad)
+  end
+
   @doc """
   Two-key triple-DES CBC encryption (the 16-byte key expands to K1 K2 K1).
   """

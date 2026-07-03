@@ -17,6 +17,9 @@ Linux only, no native code beyond the circuits_usb NIF.
 - Track download (recording to disc) through the secure session,
   including the open-source EKB and DES retail MAC key negotiation
 - Track upload from an MZ-RH1, with AEA/WAV headers ready for ffmpeg
+- Factory mode: direct RAM/EEPROM/peripheral access, firmware patching,
+  raw UTOC sector read/write and the display override (dangerous; see
+  `Netmd.Factory`)
 
 ## Usage
 
@@ -39,7 +42,7 @@ Netmd.close(device)
 
 The facade delegates to layers that are usable on their own; see the
 module docs of `Netmd.Commands`, `Netmd.Interface`, `Netmd.Session`,
-`Netmd.Device` and `Netmd.Query`.
+`Netmd.Device`, `Netmd.Query` and `Netmd.Factory`.
 
 ## Permissions
 

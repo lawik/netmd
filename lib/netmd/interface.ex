@@ -63,6 +63,7 @@ defmodule Netmd.Interface do
     * `test?: true` - send as a specific inquiry instead of a control
     * `accept_interim?: true` - return an interim response instead of
       retrying
+    * `factory?: true` - use the factory command set (request `0xff`)
   """
   @spec send_query(Device.t(), binary(), keyword()) :: {:ok, binary()} | error()
   def send_query(device, query, opts \\ []) do
@@ -77,29 +78,36 @@ defmodule Netmd.Interface do
     status =
       if Keyword.get(opts, :test?, false), do: @status_specific_inquiry, else: @status_control
 
-    Device.send_command(device, <<status>> <> query)
+    Device.send_command(device, <<status>> <> query,
+      factory?: Keyword.get(opts, :factory?, false)
+    )
   end
 
   @doc "Read and check a reply, retrying interim responses with backoff."
   @spec read_reply(Device.t(), keyword()) :: {:ok, binary()} | error()
   def read_reply(device, opts \\ []) do
-    read_reply_attempt(device, Keyword.get(opts, :accept_interim?, false), 0)
+    read_reply_attempt(
+      device,
+      Keyword.get(opts, :accept_interim?, false),
+      Keyword.get(opts, :factory?, false),
+      0
+    )
   end
 
-  defp read_reply_attempt(_device, _accept_interim?, attempt)
+  defp read_reply_attempt(_device, _accept_interim?, _factory?, attempt)
        when attempt >= @max_interim_attempts do
     {:error, :interim_timeout}
   end
 
-  defp read_reply_attempt(device, accept_interim?, attempt) do
-    with {:ok, data} <- Device.read_reply(device) do
+  defp read_reply_attempt(device, accept_interim?, factory?, attempt) do
+    with {:ok, data} <- Device.read_reply(device, factory?: factory?) do
       case classify_reply(data) do
         {:interim, rest} when accept_interim? ->
           {:ok, rest}
 
         {:interim, _rest} ->
           Process.sleep(@interim_retry_ms * (Integer.pow(2, attempt) - 1))
-          read_reply_attempt(device, accept_interim?, attempt + 1)
+          read_reply_attempt(device, accept_interim?, factory?, attempt + 1)
 
         other ->
           other

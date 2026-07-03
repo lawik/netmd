@@ -102,4 +102,11 @@ defmodule Netmd do
   @doc "Upload a track from the disc (MZ-RH1 only). See `Netmd.Commands.upload/3`."
   @spec upload(Device.t(), non_neg_integer(), keyword()) :: {:ok, map()} | {:error, term()}
   defdelegate upload(device, track, opts \\ []), to: Commands
+
+  @doc """
+  Enter factory mode for direct memory access and patching. Dangerous;
+  see `Netmd.Factory`.
+  """
+  @spec factory(Device.t()) :: {:ok, Netmd.Factory.t()} | {:error, term()}
+  defdelegate factory(device), to: Netmd.Factory, as: :open
 end

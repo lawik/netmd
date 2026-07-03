@@ -22,6 +22,12 @@ the reference `formatQuery`/`scanQuery`/BCD implementations, and writes
 `test/fixtures/query_vectors.json`. The ExUnit suite replays every vector
 against the Elixir implementation, byte for byte.
 
+The same technique covers the other pure layers: Shift-JIS and title
+sanitization (`gen_title_*.ts`), the secure-session DES crypto
+(`gen_crypto_vectors.ts`), the AEA/WAV upload headers
+(`gen_header_vectors.ts`), and the factory-mode CRC checksum, transfer
+crypto and device codes (`gen_factory_vectors.ts`).
+
 Regenerate (requires `npm install` in a sibling `../netmd-js` checkout):
 
     cd ../netmd-js

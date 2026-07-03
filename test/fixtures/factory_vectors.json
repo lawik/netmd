@@ -1,0 +1,104 @@
+{
+ "checksum8": [
+  {
+   "data": "",
+   "checksum": 0
+  },
+  {
+   "data": "69a0694a",
+   "checksum": 24262
+  },
+  {
+   "data": "c05b6c4c470f78d6",
+   "checksum": 31340
+  },
+  {
+   "data": "1271435bc098b6c09e8653641ce61e62",
+   "checksum": 4097
+  }
+ ],
+ "checksum8_seed": [
+  {
+   "data": "583f28ff45f71bd2",
+   "seed": 42390,
+   "checksum": 13189
+  },
+  {
+   "data": "de149a349491d2f04e02b866b05fc788",
+   "seed": 42390,
+   "checksum": 38451
+  }
+ ],
+ "eeprom_checksum": [
+  {
+   "data": "ecd644206b5e6b56",
+   "himd_checksum": 26399,
+   "netmd_checksum": 38127
+  },
+  {
+   "data": "4e0e9fda779707f60bf7fcdc4c5538ef126e1653236380da34d99527b904e448",
+   "himd_checksum": 61038,
+   "netmd_checksum": 18170
+  },
+  {
+   "data": "ff0b3f3802483df7d1d073d1fee59d991daffae571a4187c1bf9b2c8be039f9b4b0a65026f211b24fa03cc8a791c414df8406904987df5db9dd6ed302044761b9875efbcb84c67aef81ba1ec6a29e2b62b12f8bc59997b15a3925961827e4d3c9d9492eb6d3cc9a3220103e38dfacbbd04ad8b593e63325cbca73f0d34f2a6e1",
+   "himd_checksum": 41258,
+   "netmd_checksum": 33270
+  }
+ ],
+ "transfer_crypto": [
+  {
+   "plaintext": "d0cf777eeea78afc",
+   "encrypted": "48198a4faef50881",
+   "roundtrip": "d0cf777eeea78afc"
+  },
+  {
+   "plaintext": "087494c109a98744f4b66d50f792795e",
+   "encrypted": "5bcdb4b698fa64bfac2c58a073889347",
+   "roundtrip": "087494c109a98744f4b66d50f792795e"
+  },
+  {
+   "plaintext": "3165ffa51ef5a25627cf7c6a035b66fc2f149198f80b323b72f36c9a0596f6b1",
+   "encrypted": "1337368a507ee446ce31c50d12c95d289d7ebb8390647550ffc221975ed73832",
+   "roundtrip": "3165ffa51ef5a25627cf7c6a035b66fc2f149198f80b323b72f36c9a0596f6b1"
+  }
+ ],
+ "device_codes": [
+  {
+   "chipType": 32,
+   "version": 21,
+   "subversion": 0,
+   "code": "R2.100"
+  },
+  {
+   "chipType": 33,
+   "version": 25,
+   "subversion": 18,
+   "code": "S2.512"
+  },
+  {
+   "chipType": 34,
+   "version": 10,
+   "subversion": 255,
+   "code": "Hn1.0FF"
+  },
+  {
+   "chipType": 36,
+   "version": 30,
+   "subversion": 10,
+   "code": "Hr3.00A"
+  },
+  {
+   "chipType": 37,
+   "version": 12,
+   "subversion": 3,
+   "code": "Hx1.203"
+  },
+  {
+   "chipType": 153,
+   "version": 11,
+   "subversion": 1,
+   "code": "153?1.101"
+  }
+ ]
+}
