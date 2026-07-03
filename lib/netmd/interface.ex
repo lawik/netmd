@@ -11,12 +11,16 @@ defmodule Netmd.Interface do
   Track numbers are zero-based, as in the reference implementations.
   """
 
+  alias Netmd.Crypto
   alias Netmd.Device
+  alias Netmd.EKB
   alias Netmd.Query
   alias Netmd.SJIS
   alias Netmd.Titles
 
   @type error :: {:error, term()}
+
+  @zero_iv <<0, 0, 0, 0, 0, 0, 0, 0>>
 
   # Command status bytes
   @status_control 0x00
@@ -957,6 +961,258 @@ defmodule Netmd.Interface do
 
     with {:ok, reply} <- send_query(device, query),
          {:ok, _} <- Query.scan(reply, "1800 080046 f0030103 2b 00 %?%?") do
+      :ok
+    end
+  end
+
+  ## Secure session
+
+  @doc "Enter the secure session used for track download."
+  @spec enter_secure_session(Device.t()) :: :ok | error()
+  def enter_secure_session(device) do
+    query = Query.format("1800 080046 f0030103 80 ff")
+
+    with {:ok, reply} <- send_query(device, query),
+         {:ok, _} <- Query.scan(reply, "1800 080046 f0030103 80 00") do
+      :ok
+    end
+  end
+
+  @doc "Leave the secure session."
+  @spec leave_secure_session(Device.t()) :: :ok | error()
+  def leave_secure_session(device) do
+    query = Query.format("1800 080046 f0030103 81 ff")
+
+    with {:ok, reply} <- send_query(device, query),
+         {:ok, _} <- Query.scan(reply, "1800 080046 f0030103 81 00") do
+      :ok
+    end
+  end
+
+  @doc "Switch a Hi-MD capable device to Hi-MD mode."
+  @spec enter_himd_mode(Device.t()) :: :ok | error()
+  def enter_himd_mode(device) do
+    query = Query.format("1800 080046 f0030104 82 ff")
+
+    with {:ok, reply} <- send_query(device, query),
+         {:ok, _} <- Query.scan(reply, "1800 080046 f0030104 82 00") do
+      :ok
+    end
+  end
+
+  @doc "The device's DRM leaf ID."
+  @spec leaf_id(Device.t()) :: {:ok, binary()} | error()
+  def leaf_id(device) do
+    query = Query.format("1800 080046 f0030103 11 ff")
+
+    with {:ok, reply} <- send_query(device, query),
+         {:ok, [id]} <- Query.scan(reply, "1800 080046 f0030103 11 00 %*") do
+      {:ok, id}
+    end
+  end
+
+  @doc "Send an enabling key block to the device."
+  @spec send_key_data(Device.t(), EKB.t()) :: :ok | error()
+  def send_key_data(device, %EKB{} = ekb) do
+    chain_length = length(ekb.chain)
+    databytes = 16 + 16 * chain_length + 24
+
+    query =
+      Query.format("1800 080046 f0030103 12 ff %w 0000 %w %d %d %d 00000000 %* %*", [
+        databytes,
+        databytes,
+        chain_length,
+        ekb.depth,
+        ekb.id,
+        IO.iodata_to_binary(ekb.chain),
+        ekb.signature
+      ])
+
+    with {:ok, reply} <- send_query(device, query),
+         {:ok, _} <- Query.scan(reply, "1800 080046 f0030103 12 01 %?%? %?%?%?%?") do
+      :ok
+    end
+  end
+
+  @doc "Exchange nonces with the device; returns the device nonce."
+  @spec session_key_exchange(Device.t(), host_nonce :: <<_::64>>) :: {:ok, binary()} | error()
+  def session_key_exchange(device, host_nonce) when byte_size(host_nonce) == 8 do
+    query = Query.format("1800 080046 f0030103 20 ff 000000 %*", [host_nonce])
+
+    with {:ok, reply} <- send_query(device, query),
+         # 20 %? instead of 20 00: fix for the Panasonic SJ-MR270
+         {:ok, [device_nonce]} <- Query.scan(reply, "1800 080046 f0030103 20 %? 000000 %#") do
+      {:ok, device_nonce}
+    end
+  end
+
+  @doc "Make the device forget the negotiated session key."
+  @spec session_key_forget(Device.t()) :: :ok | error()
+  def session_key_forget(device) do
+    query = Query.format("1800 080046 f0030103 21 ff 000000")
+
+    with {:ok, reply} <- send_query(device, query),
+         {:ok, _} <- Query.scan(reply, "1800 080046 f0030103 21 00 000000") do
+      :ok
+    end
+  end
+
+  @doc """
+  Announce a track download, passing the content ID and key encryption
+  key encrypted with the 8-byte session key.
+  """
+  @spec setup_download(
+          Device.t(),
+          content_id :: <<_::160>>,
+          key_encryption_key :: <<_::64>>,
+          session_key :: <<_::64>>
+        ) :: :ok | error()
+  def setup_download(device, content_id, key_encryption_key, session_key)
+      when byte_size(content_id) == 20 and byte_size(key_encryption_key) == 8 and
+             byte_size(session_key) == 8 do
+    message = <<1, 1, 1, 1>> <> content_id <> key_encryption_key
+    encrypted = Crypto.des_cbc_encrypt(session_key, @zero_iv, message)
+    query = Query.format("1800 080046 f0030103 22 ff 0000 %*", [encrypted])
+
+    with {:ok, reply} <- send_query(device, query),
+         {:ok, _} <- Query.scan(reply, "1800 080046 f0030103 22 00 0000") do
+      :ok
+    end
+  end
+
+  @doc "Commit a downloaded track (zero-based), proving session knowledge."
+  @spec commit_track(Device.t(), non_neg_integer(), session_key :: <<_::64>>) :: :ok | error()
+  def commit_track(device, track, session_key) when byte_size(session_key) == 8 do
+    authentication = Crypto.des_ecb_encrypt(session_key, @zero_iv)
+    query = Query.format("1800 080046 f0030103 48 ff 00 1001 %w %*", [track, authentication])
+
+    with {:ok, reply} <- send_query(device, query),
+         {:ok, _} <- Query.scan(reply, "1800 080046 f0030103 48 00 00 1001 %?%?") do
+      :ok
+    end
+  end
+
+  @doc """
+  Stream encrypted track packets to the device.
+
+  `packets` is an enumerable of `{key, iv, data}` tuples as produced by
+  `Netmd.Track.packets/1`. Returns the new track number and the
+  decrypted UUID and content ID the device reports.
+
+  Options:
+
+    * `:progress` - function called with `(total_bytes, written_bytes)`
+    * `:settle_ms` - wait before and after announcing (default 200, the
+      reference's allowance for slow Sharp devices)
+  """
+  @spec send_track(
+          Device.t(),
+          wireformat :: byte(),
+          discformat :: byte(),
+          frames :: pos_integer(),
+          packet_size :: pos_integer(),
+          packets :: Enumerable.t(),
+          session_key :: <<_::64>>,
+          keyword()
+        ) ::
+          {:ok, %{track: non_neg_integer(), uuid: binary(), ccid: binary()}} | error()
+  def send_track(
+        device,
+        wireformat,
+        discformat,
+        frames,
+        packet_size,
+        packets,
+        session_key,
+        opts \\ []
+      ) do
+    settle_ms = Keyword.get(opts, :settle_ms, 200)
+    progress = Keyword.get(opts, :progress)
+    total_bytes = packet_size + 24
+
+    Process.sleep(settle_ms)
+
+    query =
+      Query.format("1800 080046 f0030103 28 ff 000100 1001 ffff 00 %b %b %d %d", [
+        wireformat,
+        discformat,
+        frames,
+        total_bytes
+      ])
+
+    with {:ok, reply} <- send_query(device, query, accept_interim?: true),
+         {:ok, _} <- Query.scan(reply, "1800 080046 f0030103 28 00 000100 1001 %?%? 00 %*") do
+      Process.sleep(settle_ms)
+
+      with :ok <- write_packets(device, packets, packet_size, total_bytes, progress),
+           {:ok, final} <- read_reply(device),
+           {:ok, _pending} <- Device.reply_length(device),
+           {:ok, [track, encrypted]} <-
+             Query.scan(
+               final,
+               "1800 080046 f0030103 28 00 000100 1001 %w 00 %?%? %?%?%?%? %?%?%?%? %*"
+             ) do
+        decrypt_track_confirmation(track, encrypted, session_key)
+      end
+    end
+  end
+
+  defp decrypt_track_confirmation(track, encrypted, session_key)
+       when byte_size(encrypted) >= 32 do
+    decrypted = Crypto.des_cbc_decrypt(session_key, @zero_iv, encrypted)
+
+    {:ok,
+     %{
+       track: track,
+       uuid: binary_part(decrypted, 0, 8),
+       ccid: binary_part(decrypted, 12, 20)
+     }}
+  end
+
+  defp decrypt_track_confirmation(_track, _encrypted, _session_key),
+    do: {:error, :bad_track_confirmation}
+
+  defp write_packets(device, packets, packet_size, total_bytes, progress) do
+    packets
+    |> Enum.reduce_while({:ok, 0, 0}, fn {key, iv, data}, {:ok, index, written} ->
+      if progress, do: progress.(total_bytes, written)
+
+      binpack =
+        case index do
+          0 -> <<0, 0, 0, 0, packet_size::little-32, key::binary, iv::binary, data::binary>>
+          _later -> data
+        end
+
+      case Device.write_bulk(device, binpack) do
+        :ok -> {:cont, {:ok, index + 1, written + byte_size(data)}}
+        {:error, reason} -> {:halt, {:error, reason}}
+      end
+    end)
+    |> case do
+      {:ok, _count, written} ->
+        if progress, do: progress.(total_bytes, written)
+        :ok
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  @doc "UUID of a track (zero-based) as raw bytes."
+  @spec track_uuid(Device.t(), non_neg_integer()) :: {:ok, binary()} | error()
+  def track_uuid(device, track) do
+    query = Query.format("1800 080046 f0030103 23 ff 1001 %w", [track])
+
+    with {:ok, reply} <- send_query(device, query),
+         {:ok, [uuid]} <- Query.scan(reply, "1800 080046 f0030103 23 00 1001 %?%? %*") do
+      {:ok, uuid}
+    end
+  end
+
+  @doc "Terminate the secure session state machine."
+  @spec terminate(Device.t()) :: :ok | error()
+  def terminate(device) do
+    with {:ok, _reply} <- send_query(device, Query.format("1800 080046 f0030103 2a ff00")) do
       :ok
     end
   end

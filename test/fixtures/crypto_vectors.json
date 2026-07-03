@@ -1,0 +1,103 @@
+{
+ "retailmac": [
+  {
+   "key": "05aac7bd1b80255dc64c650cdb8c3a58",
+   "value": "83c443698acb6d93f30ca9473ead1b34",
+   "mac": "7135db6c9e5a9275"
+  },
+  {
+   "key": "48aaa57a9c06a9894567964a716bf2be",
+   "value": "e7cc7d44ee6156291d7108a852a3438c",
+   "mac": "186d76fb19d5a30d"
+  },
+  {
+   "key": "42286873f6dada2b834f511041dc74fb",
+   "value": "cf7ac7f7e04044e9f15f2b8209e21623",
+   "mac": "59b07e162c993a00"
+  },
+  {
+   "key": "4ce342e32e40c25ade02df04801c06a6",
+   "value": "9fe48b7044f805589ae9364640b909ef",
+   "mac": "5c72442231701e1a"
+  },
+  {
+   "key": "4f56f3188690283063be1e65c98ab430",
+   "value": "13a1524ce71a3b5a699658c7ecff9528",
+   "mac": "034b0fadbec8917d"
+  },
+  {
+   "key": "88c6e2f72626bb0b0de84c934ae1c1d8",
+   "value": "e54ec25d94af144e83af7d835f27be96",
+   "mac": "fbc6960e725db1c4"
+  },
+  {
+   "key": "3e88bfc315277ed8665e960fa255cae5",
+   "value": "4a4451e3e3503988668d8218d229c455",
+   "mac": "71ed2c653e8f3c69"
+  },
+  {
+   "key": "5567bdddf1e12601c27eff3ea8b7912f",
+   "value": "de5c708ecd26b3d811f80cb64465191b",
+   "mac": "55032f3267be1a43"
+  }
+ ],
+ "ecb_decrypt": [
+  {
+   "kek": "0de7e6036c85a380",
+   "raw_key": "c5b7a5bbfff7d5e6",
+   "packet_key": "557ba503f9ecb122"
+  },
+  {
+   "kek": "b5bedf6a770c5d38",
+   "raw_key": "3bac6777359a049f",
+   "packet_key": "9d689c48a894cb03"
+  },
+  {
+   "kek": "62de408263f16ae1",
+   "raw_key": "4c1dee40137a9a19",
+   "packet_key": "2d4542bae084a7a2"
+  },
+  {
+   "kek": "765e18c5de6702a8",
+   "raw_key": "72bb35f1a971db61",
+   "packet_key": "c944af21973ad6d8"
+  }
+ ],
+ "cbc_chain": [
+  {
+   "key": "81dd6d1448454f39",
+   "chunks": [
+    {
+     "iv": "0000000000000000",
+     "data": "762f0b1d6ee0e3f8b89cd5b1278b5912",
+     "encrypted": "fe9772d755a39b27c843406ad88d7686"
+    }
+   ]
+  },
+  {
+   "key": "61b1d08c44e64948",
+   "chunks": [
+    {
+     "iv": "0000000000000000",
+     "data": "923f86af498361fbc6366d1bfc74bd4a1b9ef2464e57e3cb",
+     "encrypted": "9ce482fdc14344a1be4cb70be4823b0a81c5c1b9f306b836"
+    },
+    {
+     "iv": "81c5c1b9f306b836",
+     "data": "c6c1e98f96fd992452146515c9e5678f",
+     "encrypted": "c1e76b2729f5613335c87b8455fc5ac9"
+    }
+   ]
+  }
+ ],
+ "setup_download": {
+  "session_key": "3d8577eb74a6e5e4",
+  "content_id": "9b094e5462fbf15791eae3022e5834ccb2370a6c",
+  "kek": "0b300f5f21a2de2e",
+  "encrypted": "dc98d0379c8df3716721f9c92ca9ed8ee663a09b4e5a1f18acbd5a7aaa263400"
+ },
+ "commit_track": {
+  "session_key": "3d8577eb74a6e5e4",
+  "auth": "4aacc3d3723d272a"
+ }
+}
