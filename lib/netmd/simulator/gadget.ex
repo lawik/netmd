@@ -129,7 +129,17 @@ defmodule Netmd.Simulator.Gadget do
 
   def handle_info({:DOWN, _ref, :process, _pid, _reason}, state), do: {:noreply, state}
 
-  def handle_info({:EXIT, _pid, reason}, state), do: {:stop, reason, state}
+  # Only a crash of the brain or the FunctionFS server is fatal. Ignore EXIT
+  # signals from transient ports (the mount/umount commands run via
+  # System.cmd) and other short-lived linked helpers, which would otherwise
+  # tear the gadget down the moment it comes up.
+  def handle_info({:EXIT, pid, reason}, state) do
+    if pid in [state.brain, state.ffs] do
+      {:stop, reason, state}
+    else
+      {:noreply, state}
+    end
+  end
 
   @impl GenServer
   def terminate(_reason, state) do
