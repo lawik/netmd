@@ -9,7 +9,7 @@ defmodule Netmd.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps(),
       name: "Netmd",
-      description: "TODO: write a proper description",
+      description: "Drive MiniDisc recorders over NetMD USB",
       docs: docs(),
       package: package(),
       aliases: aliases(),
@@ -34,8 +34,8 @@ defmodule Netmd.MixProject do
   def package do
     [
       name: :netmd,
-      licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/TODO/netmd"}
+      licenses: ["GPL-2.0-only"],
+      links: %{"GitHub" => "https://github.com/lawik/netmd"}
     ]
   end
 
@@ -79,6 +79,7 @@ defmodule Netmd.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
+      {:circuits_usb, github: "lawik/circuits_usb"},
       {:nstandard, "~> 0.5", runtime: false},
       {:igniter, "~> 0.6", only: [:dev, :test]},
       {:ex_doc, "~> 0.40", only: [:dev, :test], runtime: false},

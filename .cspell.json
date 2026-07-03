@@ -23,5 +23,18 @@
     "priv",
     "test"
   ],
-  "words": []
+  "words": [
+    "netmd",
+    "libnetmd",
+    "minidisc",
+    "minidiscs",
+    "webminidisc",
+    "gnomovision",
+    "atrac",
+    "sjis",
+    "katakana",
+    "hiragana",
+    "dakuten",
+    "handakuten"
+  ]
 }
