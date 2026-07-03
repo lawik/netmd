@@ -1,0 +1,370 @@
+{
+ "titles": [
+  {
+   "input": "",
+   "encoded": "",
+   "length_sjis": 0,
+   "half_width_length": 0,
+   "sanitized_half": "",
+   "sanitized_full": "",
+   "aggressive": ""
+  },
+  {
+   "input": "Hello World",
+   "encoded": "48656c6c6f20576f726c64",
+   "length_sjis": 11,
+   "half_width_length": 11,
+   "sanitized_half": "Hello World",
+   "sanitized_full": "Ｈｅｌｌｏ　Ｗｏｒｌｄ",
+   "aggressive": "Hello World"
+  },
+  {
+   "input": "hello/slash;semi-dash",
+   "encoded": "68656c6c6f2f736c6173683b73656d692d64617368",
+   "length_sjis": 21,
+   "half_width_length": 21,
+   "sanitized_half": "hello/slash;semi-dash",
+   "sanitized_full": "ｈｅｌｌｏ／ｓｌａｓｈ；ｓｅｍｉ－ｄａｓｈ",
+   "aggressive": "hello/slash;semi-dash"
+  },
+  {
+   "input": "UPPER lower 0123456789",
+   "encoded": "5550504552206c6f7765722030313233343536373839",
+   "length_sjis": 22,
+   "half_width_length": 22,
+   "sanitized_half": "UPPER lower 0123456789",
+   "sanitized_full": "ＵＰＰＥＲ　ｌｏｗｅｒ　０１２３４５６７８９",
+   "aggressive": "UPPER lower 0123456789"
+  },
+  {
+   "input": "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~",
+   "encoded": "2122232425262728292a2b2c2d2e2f3a3b3c3d3e3f405b5d5e5f607b7c7d7e",
+   "length_sjis": 31,
+   "half_width_length": 31,
+   "sanitized_half": "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~",
+   "sanitized_full": "！＂＃＄％＆＇（）＊＋，－．／：；＜＝＞？＠［］＾＿｀｛｜｝～",
+   "aggressive": "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~"
+  },
+  {
+   "input": "カタカナ",
+   "encoded": "834a835e834a8369",
+   "length_sjis": 8,
+   "half_width_length": 4,
+   "sanitized_half": "ｶﾀｶﾅ",
+   "sanitized_full": "カタカナ",
+   "aggressive": ""
+  },
+  {
+   "input": "ガタ゛ダ",
+   "encoded": "834a8145835e814a835f",
+   "length_sjis": 10,
+   "half_width_length": 6,
+   "sanitized_half": "ｶﾞﾀﾞﾀﾞ",
+   "sanitized_full": "カ・タ゛ダ",
+   "aggressive": ""
+  },
+  {
+   "input": "ﾊﾟﾋﾞｶﾞ",
+   "encoded": "cadfcbdeb6de",
+   "length_sjis": 6,
+   "half_width_length": 6,
+   "sanitized_half": "ﾊﾟﾋﾞｶﾞ",
+   "sanitized_full": "",
+   "aggressive": ""
+  },
+  {
+   "input": "ｶﾀｶﾅ ﾊﾝｶｸ",
+   "encoded": "b6c0b6c520caddb6b8",
+   "length_sjis": 9,
+   "half_width_length": 9,
+   "sanitized_half": "ｶﾀｶﾅ ﾊﾝｶｸ",
+   "sanitized_full": "カタカナ　ハンカク",
+   "aggressive": " "
+  },
+  {
+   "input": "ひらがな",
+   "encoded": "82d082e782aa82c8",
+   "length_sjis": 8,
+   "half_width_length": 5,
+   "sanitized_half": "ﾋﾗｶﾞﾅ",
+   "sanitized_full": "ひらがな",
+   "aggressive": ""
+  },
+  {
+   "input": "がぎぐげご ぱぴぷ",
+   "encoded": "82aa82ac82ae82b082b22082cf82d282d5",
+   "length_sjis": 17,
+   "half_width_length": 17,
+   "sanitized_half": "ｶﾞｷﾞｸﾞｹﾞｺﾞ ﾊﾟﾋﾟﾌﾟ",
+   "sanitized_full": "がぎぐげご　ぱぴぷ",
+   "aggressive": " "
+  },
+  {
+   "input": "漢字タイトル",
+   "encoded": "8abf8e9a835e83438367838b",
+   "length_sjis": 12,
+   "half_width_length": 6,
+   "sanitized_half": "  ﾀｲﾄﾙ",
+   "sanitized_full": "漢字タイトル",
+   "aggressive": ""
+  },
+  {
+   "input": "日本語のうた",
+   "encoded": "93fa967b8cea82cc82a482bd",
+   "length_sjis": 12,
+   "half_width_length": 6,
+   "sanitized_half": "   ﾉｳﾀ",
+   "sanitized_full": "日本語のうた",
+   "aggressive": ""
+  },
+  {
+   "input": "Привет мир",
+   "encoded": "84508482847984728475848420847d84798482",
+   "length_sjis": 19,
+   "half_width_length": 10,
+   "sanitized_half": "Privet mir",
+   "sanitized_full": " ",
+   "aggressive": " "
+  },
+  {
+   "input": "Käße größer Übung",
+   "encoded": "4b814581456520677281458145657220814562756e67",
+   "length_sjis": 22,
+   "half_width_length": 17,
+   "sanitized_half": "Kaesse groesser Uebung",
+   "sanitized_full": "Ｋaessｅ　ｇｒoessｅｒ　Ueｂｕｎｇ",
+   "aggressive": "Kasse grosser Ubung"
+  },
+  {
+   "input": "déjà vu à côté",
+   "encoded": "6481456a814520767520814520638145748145",
+   "length_sjis": 19,
+   "half_width_length": 14,
+   "sanitized_half": "deja vu a cote",
+   "sanitized_full": "ｄ・ｊ・　ｖｕ　・　ｃ・ｔ・",
+   "aggressive": "deja vu a cote"
+  },
+  {
+   "input": "naïve façade",
+   "encoded": "6e61814576652066618145616465",
+   "length_sjis": 14,
+   "half_width_length": 12,
+   "sanitized_half": "naive facade",
+   "sanitized_full": "ｎａ・ｖｅ　ｆａ・ａｄｅ",
+   "aggressive": "naive facade"
+  },
+  {
+   "input": "ø æ œ ł đ",
+   "encoded": "8145208145208145208145208145",
+   "length_sjis": 14,
+   "half_width_length": 9,
+   "sanitized_half": "oaeoeld",
+   "sanitized_full": "・　・　・　・　・",
+   "aggressive": "o ae oe l d"
+  },
+  {
+   "input": "Track 01 - ダンス / ど-れ",
+   "encoded": "547261636b203031202d20835f83938358202f2082c72d82ea",
+   "length_sjis": 25,
+   "half_width_length": 22,
+   "sanitized_half": "Track 01 - ﾀﾞﾝｽ / ﾄﾞ-ﾚ",
+   "sanitized_full": "Ｔｒａｃｋ　０１　－　ダンス　／　ど－れ",
+   "aggressive": "Track 01 -  / -"
+  },
+  {
+   "input": "ａｂｃＡＢＣ１２３",
+   "encoded": "828182828283826082618262825082518252",
+   "length_sjis": 18,
+   "half_width_length": 9,
+   "sanitized_half": "abcABC123",
+   "sanitized_full": "ａｂｃＡＢＣ１２３",
+   "aggressive": "abcABC"
+  },
+  {
+   "input": "０；Ｔｉｔｌｅ／／",
+   "encoded": "824f8147827382898294828c8285815e815e",
+   "length_sjis": 18,
+   "half_width_length": 9,
+   "sanitized_half": "0;Title//",
+   "sanitized_full": "０；Ｔｉｔｌｅ／／",
+   "aggressive": "Title"
+  },
+  {
+   "input": "0;My Disc//1-5;Group//",
+   "encoded": "303b4d7920446973632f2f312d353b47726f75702f2f",
+   "length_sjis": 22,
+   "half_width_length": 22,
+   "sanitized_half": "0;My Disc//1-5;Group//",
+   "sanitized_full": "０；Ｍｙ　Ｄｉｓｃ／／１－５；Ｇｒｏｕｐ／／",
+   "aggressive": "0;My Disc//1-5;Group//"
+  },
+  {
+   "input": "～〜・「」。、",
+   "encoded": "8160816081458175817681428141",
+   "length_sjis": 14,
+   "half_width_length": 7,
+   "sanitized_half": "~ ･｢｣｡､",
+   "sanitized_full": "～～・「」。、",
+   "aggressive": ""
+  },
+  {
+   "input": "fire track",
+   "encoded": "6669726520747261636b",
+   "length_sjis": 10,
+   "half_width_length": 10,
+   "sanitized_half": "fire track",
+   "sanitized_full": "ｆｉｒｅ　ｔｒａｃｋ",
+   "aggressive": "fire track"
+  },
+  {
+   "input": "ハートビート",
+   "encoded": "836e815b83678372815b8367",
+   "length_sjis": 12,
+   "half_width_length": 7,
+   "sanitized_half": "ﾊ-ﾄﾋﾞ-ﾄ",
+   "sanitized_full": "ハートビート",
+   "aggressive": ""
+  },
+  {
+   "input": "ヴァイオリン",
+   "encoded": "8394834083438349838a8393",
+   "length_sjis": 12,
+   "half_width_length": 7,
+   "sanitized_half": "ｳﾞｧｲｵﾘﾝ",
+   "sanitized_full": "ヴァイオリン",
+   "aggressive": ""
+  }
+ ],
+ "decode": [
+  {
+   "input": "",
+   "decoded": ""
+  },
+  {
+   "input": "48656c6c6f20576f726c64",
+   "decoded": "Hello World"
+  },
+  {
+   "input": "68656c6c6f2f736c6173683b73656d692d64617368",
+   "decoded": "hello/slash;semi-dash"
+  },
+  {
+   "input": "5550504552206c6f7765722030313233343536373839",
+   "decoded": "UPPER lower 0123456789"
+  },
+  {
+   "input": "2122232425262728292a2b2c2d2e2f3a3b3c3d3e3f405b5d5e5f607b7c7d7e",
+   "decoded": "!\"#$%&'()*+,-./:;<=>?@[]^_`{|}~"
+  },
+  {
+   "input": "834a835e834a8369",
+   "decoded": "カタカナ"
+  },
+  {
+   "input": "834a8145835e814a835f",
+   "decoded": "カ・タ゛ダ"
+  },
+  {
+   "input": "cadfcbdeb6de",
+   "decoded": "ﾊﾟﾋﾞｶﾞ"
+  },
+  {
+   "input": "b6c0b6c520caddb6b8",
+   "decoded": "ｶﾀｶﾅ ﾊﾝｶｸ"
+  },
+  {
+   "input": "82d082e782aa82c8",
+   "decoded": "ひらがな"
+  },
+  {
+   "input": "82aa82ac82ae82b082b22082cf82d282d5",
+   "decoded": "がぎぐげご ぱぴぷ"
+  },
+  {
+   "input": "8abf8e9a835e83438367838b",
+   "decoded": "漢字タイトル"
+  },
+  {
+   "input": "93fa967b8cea82cc82a482bd",
+   "decoded": "日本語のうた"
+  },
+  {
+   "input": "84508482847984728475848420847d84798482",
+   "decoded": "Привет мир"
+  },
+  {
+   "input": "4b814581456520677281458145657220814562756e67",
+   "decoded": "K・・e gr・・er ・bung"
+  },
+  {
+   "input": "6481456a814520767520814520638145748145",
+   "decoded": "d・j・ vu ・ c・t・"
+  },
+  {
+   "input": "6e61814576652066618145616465",
+   "decoded": "na・ve fa・ade"
+  },
+  {
+   "input": "8145208145208145208145208145",
+   "decoded": "・ ・ ・ ・ ・"
+  },
+  {
+   "input": "547261636b203031202d20835f83938358202f2082c72d82ea",
+   "decoded": "Track 01 - ダンス / ど-れ"
+  },
+  {
+   "input": "828182828283826082618262825082518252",
+   "decoded": "ａｂｃＡＢＣ１２３"
+  },
+  {
+   "input": "824f8147827382898294828c8285815e815e",
+   "decoded": "０；Ｔｉｔｌｅ／／"
+  },
+  {
+   "input": "303b4d7920446973632f2f312d353b47726f75702f2f",
+   "decoded": "0;My Disc//1-5;Group//"
+  },
+  {
+   "input": "8160816081458175817681428141",
+   "decoded": "～～・「」。、"
+  },
+  {
+   "input": "6669726520747261636b",
+   "decoded": "fire track"
+  },
+  {
+   "input": "836e815b83678372815b8367",
+   "decoded": "ハートビート"
+  },
+  {
+   "input": "8394834083438349838a8393",
+   "decoded": "ヴァイオリン"
+  }
+ ],
+ "ranges": [
+  {
+   "input": "1",
+   "full_width": "１"
+  },
+  {
+   "input": "1-5",
+   "full_width": "１－５"
+  },
+  {
+   "input": "10-12",
+   "full_width": "１０－１２"
+  },
+  {
+   "input": "3;",
+   "full_width": "３；"
+  },
+  {
+   "input": "1/2",
+   "full_width": "１／２"
+  },
+  {
+   "input": "0;",
+   "full_width": "０；"
+  }
+ ]
+}

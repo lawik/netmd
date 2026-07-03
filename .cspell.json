@@ -21,7 +21,8 @@
     "assets",
     "mix.exs",
     "priv",
-    "test"
+    "test",
+    "tools"
   ],
   "words": [
     "netmd",
@@ -43,6 +44,12 @@
     "katakana",
     "hiragana",
     "dakuten",
-    "handakuten"
+    "handakuten",
+    "jconv",
+    "codepoint",
+    "codepoints",
+    "fullwidth",
+    "halfwidth",
+    "multibyte"
   ]
 }
