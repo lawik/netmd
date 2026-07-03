@@ -109,7 +109,8 @@ defmodule Netmd.Commands do
       {frames_used, frames_total, frames_left} =
         normalize_capacity(time_to_frames(used), time_to_frames(total), time_to_frames(left))
 
-      <<_::3, write_protected::1, _::1, writable::1, _::2>> = <<flags>>
+      # Disc flags byte: bit 4 (0x10) writable, bit 6 (0x40) write-protected.
+      <<_::1, write_protected::1, _::1, writable::1, _::4>> = <<flags>>
 
       {:ok,
        %Disc{

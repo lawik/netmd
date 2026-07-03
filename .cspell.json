@@ -55,6 +55,8 @@
     "wireformat",
     "wireformats",
     "ccid",
+    "SIMUUID",
+    "SIMCONTENTID",
     "discformat",
     "binpack",
     "soundgroups",
