@@ -44,6 +44,21 @@ The facade delegates to layers that are usable on their own; see the
 module docs of `Netmd.Commands`, `Netmd.Interface`, `Netmd.Session`,
 `Netmd.Device`, `Netmd.Query` and `Netmd.Factory`.
 
+## Running without hardware
+
+`Netmd.Simulator` is a virtual NetMD device that decodes the protocol and
+holds disc state, so the whole library runs in-process with no USB:
+
+```elixir
+{:ok, device} = Netmd.open(transport: Netmd.Simulator)
+{:ok, disc} = Netmd.list_content(device)
+```
+
+To exercise the real usbfs transport too, `Netmd.Simulator.Gadget`
+presents that same brain as an actual USB device over FunctionFS; with
+`dummy_hcd` it and a host driving `Netmd.Transport.Usb` run in one VM.
+See [`vm/README.md`](vm/README.md).
+
 ## Permissions
 
 Accessing `/dev/bus/usb` needs root or a udev rule for your user, e.g.

@@ -22,7 +22,8 @@
     "mix.exs",
     "priv",
     "test",
-    "tools"
+    "tools",
+    "vm"
   ],
   "words": [
     "netmd",
