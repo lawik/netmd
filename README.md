@@ -20,6 +20,14 @@ Linux only, no native code beyond the circuits_usb NIF.
 - Factory mode: direct RAM/EEPROM/peripheral access, firmware patching,
   raw UTOC sector read/write and the display override (dangerous; see
   `NetMD.Factory`)
+- Survive the USB re-enumeration that inserting or ejecting a disc (or a
+  session reset) triggers: `NetMD.open/1` keeps the same device handle across
+  it by default, reconnecting transparently (`NetMD.Transport.Managed`)
+
+## Tested hardware
+
+Confirmed working on a **Sony MZ-N707**. The other ~48 devices in the table are
+wired up by USB id and protocol but have not each been exercised on hardware.
 
 ## Usage
 

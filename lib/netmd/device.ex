@@ -55,8 +55,13 @@ defmodule NetMD.Device do
 
   Options:
 
+    * `:reconnect` - front the device with `NetMD.Transport.Managed` so it
+      survives the USB re-enumeration that a disc insert/eject or session reset
+      triggers, keeping the same handle across it (default `true`). Passing an
+      explicit `:transport` takes precedence and disables the wrapper. See
+      `NetMD.Transport.Managed` for `:reconnect_wait` and friends.
     * `:transport` - `NetMD.Transport` implementation, defaults to
-      `NetMD.Transport.Usb`
+      `NetMD.Transport.Usb` (wrapped per `:reconnect` above)
     * `:vendor_id`, `:product_id` - open a specific device instead of the
       first known one
 
@@ -64,7 +69,7 @@ defmodule NetMD.Device do
   """
   @spec open(keyword()) :: {:ok, t()} | {:error, term()}
   def open(opts \\ []) do
-    transport = Keyword.get(opts, :transport, NetMD.Transport.Usb)
+    transport = open_transport(opts)
 
     with {:ok, handle, info} <- transport.open(opts) do
       device = %__MODULE__{
@@ -82,6 +87,16 @@ defmodule NetMD.Device do
           transport.close(handle)
           {:error, reason}
       end
+    end
+  end
+
+  # An explicit :transport wins; otherwise wrap the default USB transport in the
+  # reconnecting manager unless reconnection was turned off.
+  defp open_transport(opts) do
+    cond do
+      transport = Keyword.get(opts, :transport) -> transport
+      Keyword.get(opts, :reconnect, true) -> NetMD.Transport.Managed
+      true -> NetMD.Transport.Usb
     end
   end
 
