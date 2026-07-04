@@ -5,6 +5,8 @@ defmodule Netmd.Transport.Usb do
   Opens the first known NetMD device (or an explicit `:vendor_id` and
   `:product_id`), detaches any kernel driver and claims interface 0. The
   endpoints match every known NetMD device: bulk IN `0x81`, bulk OUT `0x02`.
+
+  `list/1` enumerates every connected known NetMD device without opening any.
   """
 
   @behaviour Netmd.Transport
@@ -84,6 +86,21 @@ defmodule Netmd.Transport.Usb do
     case CircuitsUsb.bulk_out(device, @bulk_out_endpoint, data, timeout) do
       {:ok, _written} -> :ok
       {:error, reason} -> {:error, reason}
+    end
+  end
+
+  @impl Netmd.Transport
+  def list(_opts \\ []) do
+    for ref <- CircuitsUsb.list_devices(),
+        {:ok, %Descriptor.Device{vendor_id: vendor_id, product_id: product_id}} <-
+          [ref.descriptor],
+        Devices.known?(vendor_id, product_id) do
+      %{
+        vendor_id: vendor_id,
+        product_id: product_id,
+        bus: ref.bus,
+        address: ref.address
+      }
     end
   end
 

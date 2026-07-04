@@ -24,6 +24,9 @@ Linux only, no native code beyond the circuits_usb NIF.
 ## Usage
 
 ```elixir
+# See every connected NetMD before picking one to open.
+for d <- Netmd.list_devices(), do: IO.puts("#{d.name} on bus #{d.bus}/#{d.address}")
+
 {:ok, device} = Netmd.open()
 
 {:ok, disc} = Netmd.list_content(device)

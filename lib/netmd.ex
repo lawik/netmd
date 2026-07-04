@@ -26,6 +26,10 @@ defmodule Netmd do
   alias Netmd.Device
   alias Netmd.Interface
 
+  @doc "List all connected NetMD devices. See `Netmd.Device.list/1`."
+  @spec list_devices(keyword()) :: [Device.listing()]
+  defdelegate list_devices(opts \\ []), to: Device, as: :list
+
   @doc "Open the first NetMD device found. See `Netmd.Device.open/1`."
   @spec open(keyword()) :: {:ok, Device.t()} | {:error, term()}
   defdelegate open(opts \\ []), to: Device

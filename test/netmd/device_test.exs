@@ -123,4 +123,45 @@ defmodule Netmd.DeviceTest do
     assert :ok = Device.write_bulk(device, <<9, 9, 9>>)
     assert MockTransport.remaining(pid) == []
   end
+
+  test "list enriches each device with its table name and flags" do
+    devices = [
+      %{vendor_id: 0x054C, product_id: 0x00C8, bus: 1, address: 4},
+      %{vendor_id: 0x04DD, product_id: 0x9014, bus: 1, address: 7}
+    ]
+
+    assert [first, second] = Device.list(transport: MockTransport, devices: devices)
+
+    assert first == %{
+             vendor_id: 0x054C,
+             product_id: 0x00C8,
+             name: "Sony MZ-N710/NF810",
+             flags: %{},
+             bus: 1,
+             address: 4
+           }
+
+    assert second.name == "Sharp IM-DR80"
+    assert second.flags == %{native_mono_upload: true}
+  end
+
+  test "list returns an empty list when nothing is connected" do
+    assert [] = Device.list(transport: MockTransport, devices: [])
+  end
+
+  test "list raises for a transport that cannot enumerate" do
+    defmodule NoListTransport do
+      @behaviour Netmd.Transport
+      def open(_opts), do: {:error, :nope}
+      def close(_), do: :ok
+      def control_in(_, _, _, _, _), do: {:error, :nope}
+      def control_out(_, _, _, _, _), do: {:error, :nope}
+      def bulk_in(_, _, _), do: {:error, :nope}
+      def bulk_out(_, _, _), do: {:error, :nope}
+    end
+
+    assert_raise ArgumentError, ~r/does not support listing/, fn ->
+      Device.list(transport: NoListTransport)
+    end
+  end
 end

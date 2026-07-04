@@ -131,6 +131,18 @@ defmodule Netmd.Simulator do
   end
 
   @impl Netmd.Transport
+  def list(opts \\ []) do
+    [
+      %{
+        vendor_id: Keyword.get(opts, :vendor_id, 0x054C),
+        product_id: Keyword.get(opts, :product_id, 0x00C8),
+        bus: nil,
+        address: nil
+      }
+    ]
+  end
+
+  @impl Netmd.Transport
   def close(pid), do: GenServer.stop(pid)
 
   @impl Netmd.Transport

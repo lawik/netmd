@@ -31,6 +31,16 @@ defmodule Netmd.Device do
           max_polls: pos_integer()
         }
 
+  @typedoc "A connected NetMD device, as reported by `list/1`."
+  @type listing :: %{
+          vendor_id: 0..0xFFFF,
+          product_id: 0..0xFFFF,
+          name: String.t(),
+          flags: Devices.flags(),
+          bus: pos_integer() | nil,
+          address: pos_integer() | nil
+        }
+
   # Vendor control requests
   @req_reply_length 0x01
   @req_command 0x80
@@ -73,6 +83,41 @@ defmodule Netmd.Device do
           {:error, reason}
       end
     end
+  end
+
+  @doc """
+  List the connected NetMD devices without opening any of them.
+
+  Each entry carries its USB ids, bus location and the display name and quirk
+  flags from the known device table. Multiple identical models are told apart
+  by their `:bus` and `:address`. Enumeration does not fail; an empty list means
+  nothing is connected.
+
+  Options:
+
+    * `:transport` - `Netmd.Transport` implementation, defaults to
+      `Netmd.Transport.Usb`
+
+  Remaining options are passed to the transport. Raises `ArgumentError` for a
+  transport that cannot enumerate devices.
+  """
+  @spec list(keyword()) :: [listing()]
+  def list(opts \\ []) do
+    transport = Keyword.get(opts, :transport, Netmd.Transport.Usb)
+
+    # ensure_loaded so function_exported? sees a not-yet-loaded transport module.
+    with {:module, _} <- Code.ensure_loaded(transport),
+         true <- function_exported?(transport, :list, 1) do
+      transport.list(opts) |> Enum.map(&describe/1)
+    else
+      _ -> raise ArgumentError, "transport #{inspect(transport)} does not support listing devices"
+    end
+  end
+
+  defp describe(%{vendor_id: vendor_id, product_id: product_id} = location) do
+    location
+    |> Map.put(:name, Devices.name(vendor_id, product_id))
+    |> Map.put(:flags, Devices.flags(vendor_id, product_id))
   end
 
   @doc "Release the device."

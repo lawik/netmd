@@ -39,6 +39,11 @@ defmodule Netmd.MockTransport do
   end
 
   @impl Netmd.Transport
+  def list(opts) do
+    Keyword.get(opts, :devices, [])
+  end
+
+  @impl Netmd.Transport
   def close(_pid), do: :ok
 
   @impl Netmd.Transport

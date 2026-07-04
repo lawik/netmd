@@ -14,8 +14,27 @@ defmodule Netmd.Transport do
   @typedoc "Identifying info returned from `c:open/1`."
   @type info :: %{vendor_id: 0..0xFFFF, product_id: 0..0xFFFF}
 
+  @typedoc "A device found by `c:list/1`, located on the bus."
+  @type location :: %{
+          vendor_id: 0..0xFFFF,
+          product_id: 0..0xFFFF,
+          bus: pos_integer() | nil,
+          address: pos_integer() | nil
+        }
+
   @doc "Open a device, prepare it for I/O and return a handle plus info."
   @callback open(keyword()) :: {:ok, handle(), info()} | {:error, term()}
+
+  @doc """
+  List the connected NetMD devices without opening any of them.
+
+  Enumeration is best-effort and does not fail: a device that cannot be read is
+  simply left out. Optional; transports that model a single fixed device need
+  not implement it.
+  """
+  @callback list(keyword()) :: [location()]
+
+  @optional_callbacks list: 1
 
   @doc "Release the device."
   @callback close(handle()) :: :ok

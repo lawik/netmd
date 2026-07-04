@@ -10,6 +10,19 @@ defmodule Netmd.SimulatorTest do
     device
   end
 
+  test "list_devices reports the virtual device without opening it" do
+    assert [device] = Netmd.list_devices(transport: Simulator)
+    assert device.vendor_id == 0x054C
+    assert device.product_id == 0x00C8
+    assert device.name == "Sony MZ-N710/NF810"
+
+    assert [custom] =
+             Netmd.list_devices(transport: Simulator, vendor_id: 0x04DD, product_id: 0x9014)
+
+    assert custom.name == "Sharp IM-DR80"
+    assert custom.flags == %{native_mono_upload: true}
+  end
+
   test "list_content reads the demo disc through the whole stack" do
     device = open!()
 
