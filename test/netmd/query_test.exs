@@ -71,6 +71,14 @@ defmodule Netmd.QueryTest do
       assert Query.scan(<<0x00, 0x00, 0x00, 0x01>>, "00 00 %? 01") == {:ok, []}
     end
 
+    test "trailing wildcard tolerates end of input" do
+      # netmd-js's %? is a no-op past the end of input, so a %x that consumes the
+      # whole reply followed by a trailing %? must still match. Real replies rely
+      # on this: playback_status2 on the MZ-N707 ends exactly at the %x blob.
+      assert Query.scan(<<0x00, 0x00>>, "00 00 %?") == {:ok, []}
+      assert Query.scan(<<0x00, 0x02, 0xAA, 0xBB>>, "%x %?") == {:ok, [<<0xAA, 0xBB>>]}
+    end
+
     test "parse remaining bytes" do
       assert Query.scan(<<0x00, 0x00, 0x00, 0x01>>, "00 00 %*") == {:ok, [<<0x00, 0x01>>]}
     end

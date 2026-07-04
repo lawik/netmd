@@ -238,7 +238,11 @@ defmodule Netmd.Query do
   defp match([{:fmt, ??, _} | tokens], data, acc) do
     case data do
       <<_skipped, rest::binary>> -> match(tokens, rest, acc)
-      <<>> -> {:error, :input_exhausted}
+      # netmd-js's %? is `inputStack.shift()`, a harmless no-op past the end of
+      # input, so a trailing %? after a %x that consumed the whole reply must not
+      # fail. Real replies rely on this: playback_status2 on the MZ-N707 ends
+      # exactly at the %x blob, with nothing left for the final %? to skip.
+      <<>> -> match(tokens, <<>>, acc)
     end
   end
 
