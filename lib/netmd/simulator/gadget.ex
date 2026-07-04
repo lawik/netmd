@@ -1,8 +1,8 @@
-defmodule Netmd.Simulator.Gadget do
+defmodule NetMD.Simulator.Gadget do
   @moduledoc """
-  Present the `Netmd.Simulator` brain as a real USB NetMD device.
+  Present the `NetMD.Simulator` brain as a real USB NetMD device.
 
-  Where `Netmd.Simulator` implements a `Netmd.Transport` for in-process
+  Where `NetMD.Simulator` implements a `NetMD.Transport` for in-process
   use, this wires the same device brain to a Linux USB gadget over
   `CircuitsUsb.Gadget` and `CircuitsUsb.FunctionFs`. The vendor control
   protocol (reply-length poll, command, read-reply, factory) arrives as
@@ -10,7 +10,7 @@ defmodule Netmd.Simulator.Gadget do
   by a task. The result is an actual USB device on the bus.
 
   With `dummy_hcd` loaded, the gadget and a host driving it with the real
-  `Netmd.Transport.Usb` can run in the same machine, so the whole stack is
+  `NetMD.Transport.Usb` can run in the same machine, so the whole stack is
   exercised over usbfs without any external hardware. This is the "both
   sides in one VM" setup; see `vm/` and `README_VM.md`.
 
@@ -22,12 +22,12 @@ defmodule Netmd.Simulator.Gadget do
 
   ## Use
 
-      {:ok, g} = Netmd.Simulator.Gadget.start_link(udc: "dummy_udc.0")
+      {:ok, g} = NetMD.Simulator.Gadget.start_link(udc: "dummy_udc.0")
       # ... a host now enumerates a Sony NetMD device and can be driven
-      # with Netmd.open() (real transport) from another process/VM ...
-      :ok = Netmd.Simulator.Gadget.stop(g)
+      # with NetMD.open() (real transport) from another process/VM ...
+      :ok = NetMD.Simulator.Gadget.stop(g)
 
-  Pass `disc:` to start from a custom `Netmd.Simulator.Disc`.
+  Pass `disc:` to start from a custom `NetMD.Simulator.Disc`.
   """
 
   use GenServer
@@ -35,7 +35,7 @@ defmodule Netmd.Simulator.Gadget do
   alias CircuitsUsb.FunctionFs
   alias CircuitsUsb.Gadget
   alias CircuitsUsb.Shim
-  alias Netmd.Simulator
+  alias NetMD.Simulator
 
   require Logger
 
@@ -53,7 +53,7 @@ defmodule Netmd.Simulator.Gadget do
   @doc """
   Start the gadget. Options:
 
-    * `:disc` - a `Netmd.Simulator.Disc` to present (default: demo disc)
+    * `:disc` - a `NetMD.Simulator.Disc` to present (default: demo disc)
     * `:vendor_id` / `:product_id` - USB ids (default Sony MZ-N710)
     * `:udc` - the UDC to bind to (default: first in `/sys/class/udc`)
     * `:gadget` / `:instance` / `:mountpoint` - naming overrides
@@ -229,7 +229,7 @@ defmodule Netmd.Simulator.Gadget do
         Shim.close(endpoint)
 
       {:error, reason} ->
-        Logger.warning("Netmd.Simulator.Gadget: bulk OUT open failed: #{inspect(reason)}")
+        Logger.warning("NetMD.Simulator.Gadget: bulk OUT open failed: #{inspect(reason)}")
     end
   end
 

@@ -13,14 +13,14 @@ vendor_id = 0x054C
 product_id = 0x00C8
 
 IO.puts("== starting gadget ==")
-{:ok, gadget} = Netmd.Simulator.Gadget.start_link(udc: "dummy_udc.0")
+{:ok, gadget} = NetMD.Simulator.Gadget.start_link(udc: "dummy_udc.0")
 Process.sleep(2500)
 
-{:ok, device} = Netmd.open(vendor_id: vendor_id, product_id: product_id)
-IO.puts("opened #{Netmd.Device.name(device)}")
+{:ok, device} = NetMD.open(vendor_id: vendor_id, product_id: product_id)
+IO.puts("opened #{NetMD.Device.name(device)}")
 
 show = fn label ->
-  case Netmd.device_status(device) do
+  case NetMD.device_status(device) do
     {:ok, s} ->
       time =
         case s.time do
@@ -48,19 +48,19 @@ end
 
 IO.puts("== playback ==")
 show.("initial")
-drive.("play", fn -> Netmd.play(device) end)
-drive.("pause", fn -> Netmd.pause(device) end)
-drive.("fast_forward", fn -> Netmd.fast_forward(device) end)
-drive.("rewind", fn -> Netmd.rewind(device) end)
-drive.("next_track", fn -> Netmd.next_track(device) end)
-drive.("next_track", fn -> Netmd.next_track(device) end)
-drive.("previous_track", fn -> Netmd.previous_track(device) end)
-drive.("goto_track 1", fn -> Netmd.goto_track(device, 1) end)
-drive.("goto_time 1:23", fn -> Netmd.goto_time(device, 1, minute: 1, second: 23, frame: 45) end)
-drive.("restart_track", fn -> Netmd.restart_track(device) end)
-drive.("stop", fn -> Netmd.stop(device) end)
+drive.("play", fn -> NetMD.play(device) end)
+drive.("pause", fn -> NetMD.pause(device) end)
+drive.("fast_forward", fn -> NetMD.fast_forward(device) end)
+drive.("rewind", fn -> NetMD.rewind(device) end)
+drive.("next_track", fn -> NetMD.next_track(device) end)
+drive.("next_track", fn -> NetMD.next_track(device) end)
+drive.("previous_track", fn -> NetMD.previous_track(device) end)
+drive.("goto_track 1", fn -> NetMD.goto_track(device, 1) end)
+drive.("goto_time 1:23", fn -> NetMD.goto_time(device, 1, minute: 1, second: 23, frame: 45) end)
+drive.("restart_track", fn -> NetMD.restart_track(device) end)
+drive.("stop", fn -> NetMD.stop(device) end)
 
 IO.puts("== teardown ==")
-Netmd.close(device)
-Netmd.Simulator.Gadget.stop(gadget)
+NetMD.close(device)
+NetMD.Simulator.Gadget.stop(gadget)
 IO.puts("PLAYBACK_OK")

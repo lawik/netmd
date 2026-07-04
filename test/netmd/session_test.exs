@@ -1,13 +1,13 @@
-defmodule Netmd.SessionTest do
+defmodule NetMD.SessionTest do
   use ExUnit.Case, async: true
 
-  alias Netmd.Crypto
-  alias Netmd.Device
-  alias Netmd.EKB
-  alias Netmd.MockTransport
-  alias Netmd.Query
-  alias Netmd.Session
-  alias Netmd.Track
+  alias NetMD.Crypto
+  alias NetMD.Device
+  alias NetMD.EKB
+  alias NetMD.MockTransport
+  alias NetMD.Query
+  alias NetMD.Session
+  alias NetMD.Track
 
   @zero_iv <<0::64>>
   @clean_poll {{:control_in, 0x01, 4}, {:ok, <<0, 0, 0, 0>>}}

@@ -1,6 +1,6 @@
-defmodule Netmd.Transport.Usb do
+defmodule NetMD.Transport.Usb do
   @moduledoc """
-  `Netmd.Transport` backed by `CircuitsUsb`.
+  `NetMD.Transport` backed by `CircuitsUsb`.
 
   Opens the first known NetMD device (or an explicit `:vendor_id` and
   `:product_id`), detaches any kernel driver and claims interface 0. The
@@ -9,10 +9,10 @@ defmodule Netmd.Transport.Usb do
   `list/1` enumerates every connected known NetMD device without opening any.
   """
 
-  @behaviour Netmd.Transport
+  @behaviour NetMD.Transport
 
   alias CircuitsUsb.Descriptor
-  alias Netmd.Devices
+  alias NetMD.Devices
 
   # bmRequestType: vendor type, interface recipient
   @request_type_out 0x41
@@ -23,7 +23,7 @@ defmodule Netmd.Transport.Usb do
   @interface 0
   @control_timeout 1000
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def open(opts \\ []) do
     with {:ok, ref, info} <- find(opts),
          {:ok, device} <- CircuitsUsb.open(ref) do
@@ -40,14 +40,14 @@ defmodule Netmd.Transport.Usb do
     end
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def close(device) do
     _ = CircuitsUsb.reset(device)
     _ = CircuitsUsb.release_interface(device, @interface)
     CircuitsUsb.close(device)
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def control_in(device, request, value, index, length) do
     CircuitsUsb.control_transfer(
       device,
@@ -60,7 +60,7 @@ defmodule Netmd.Transport.Usb do
     )
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def control_out(device, request, value, index, data) do
     case CircuitsUsb.control_transfer(
            device,
@@ -76,12 +76,12 @@ defmodule Netmd.Transport.Usb do
     end
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def bulk_in(device, length, timeout) do
     CircuitsUsb.bulk_in(device, @bulk_in_endpoint, length, timeout)
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def bulk_out(device, data, timeout) do
     case CircuitsUsb.bulk_out(device, @bulk_out_endpoint, data, timeout) do
       {:ok, _written} -> :ok
@@ -89,7 +89,7 @@ defmodule Netmd.Transport.Usb do
     end
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def list(_opts \\ []) do
     for ref <- CircuitsUsb.list_devices(),
         {:ok, %Descriptor.Device{vendor_id: vendor_id, product_id: product_id}} <-

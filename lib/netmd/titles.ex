@@ -1,4 +1,4 @@
-defmodule Netmd.Titles do
+defmodule NetMD.Titles do
   @moduledoc """
   Title sanitization for MiniDisc TOC entries, ported from netmd-js.
 
@@ -9,7 +9,7 @@ defmodule Netmd.Titles do
   source by `tools/gen_title_tables.ts`.
   """
 
-  alias Netmd.SJIS
+  alias NetMD.SJIS
 
   @tables_path Path.join(:code.priv_dir(:netmd) || "priv", "titles_tables.json")
   @external_resource @tables_path

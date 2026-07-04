@@ -1,6 +1,6 @@
-defmodule Netmd.Disc do
+defmodule NetMD.Disc do
   @moduledoc """
-  Disc contents as returned by `Netmd.Commands.list_content/1`.
+  Disc contents as returned by `NetMD.Commands.list_content/1`.
   """
 
   defstruct title: "",
@@ -23,7 +23,7 @@ defmodule Netmd.Disc do
           left: non_neg_integer(),
           total: non_neg_integer(),
           track_count: non_neg_integer(),
-          groups: [Netmd.Disc.Group.t()]
+          groups: [NetMD.Disc.Group.t()]
         }
 
   defmodule Group do
@@ -38,7 +38,7 @@ defmodule Netmd.Disc do
             index: non_neg_integer(),
             title: String.t() | nil,
             full_width_title: String.t() | nil,
-            tracks: [Netmd.Disc.Track.t()]
+            tracks: [NetMD.Disc.Track.t()]
           }
   end
 
@@ -62,7 +62,7 @@ defmodule Netmd.Disc do
   end
 
   @doc "All tracks across all groups."
-  @spec tracks(t()) :: [Netmd.Disc.Track.t()]
+  @spec tracks(t()) :: [NetMD.Disc.Track.t()]
   def tracks(%__MODULE__{groups: groups}), do: Enum.flat_map(groups, & &1.tracks)
 
   @doc "Total number of tracks in the listing."

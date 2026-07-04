@@ -1,36 +1,36 @@
-defmodule Netmd do
+defmodule NetMD do
   @moduledoc """
   Drive MiniDisc recorders over NetMD USB.
 
   A port of the NetMD protocol as implemented by netmd-js and libnetmd
   (linux-minidisc), on top of `CircuitsUsb`.
 
-      {:ok, device} = Netmd.open()
-      {:ok, disc} = Netmd.list_content(device)
-      :ok = Netmd.play(device)
+      {:ok, device} = NetMD.open()
+      {:ok, disc} = NetMD.list_content(device)
+      :ok = NetMD.play(device)
 
-      track = %Netmd.Track{title: "New Song", format: :lp2, data: atrac3_data}
-      {:ok, %{track: n}} = Netmd.download(device, track)
+      track = %NetMD.Track{title: "New Song", format: :lp2, data: atrac3_data}
+      {:ok, %{track: n}} = NetMD.download(device, track)
 
   This module is a convenience facade; the layers underneath are usable
   on their own:
 
-    * `Netmd.Commands` - disc listing, renaming, transfers
-    * `Netmd.Interface` - the full NetMD command set
-    * `Netmd.Session` / `Netmd.Track` - secure download sessions
-    * `Netmd.Device` - the raw USB exchange protocol
-    * `Netmd.Query` - the query format/scan DSL
+    * `NetMD.Commands` - disc listing, renaming, transfers
+    * `NetMD.Interface` - the full NetMD command set
+    * `NetMD.Session` / `NetMD.Track` - secure download sessions
+    * `NetMD.Device` - the raw USB exchange protocol
+    * `NetMD.Query` - the query format/scan DSL
   """
 
-  alias Netmd.Commands
-  alias Netmd.Device
-  alias Netmd.Interface
+  alias NetMD.Commands
+  alias NetMD.Device
+  alias NetMD.Interface
 
-  @doc "List all connected NetMD devices. See `Netmd.Device.list/1`."
+  @doc "List all connected NetMD devices. See `NetMD.Device.list/1`."
   @spec list_devices(keyword()) :: [Device.listing()]
   defdelegate list_devices(opts \\ []), to: Device, as: :list
 
-  @doc "Open the first NetMD device found. See `Netmd.Device.open/1`."
+  @doc "Open the first NetMD device found. See `NetMD.Device.open/1`."
   @spec open(keyword()) :: {:ok, Device.t()} | {:error, term()}
   defdelegate open(opts \\ []), to: Device
 
@@ -42,8 +42,8 @@ defmodule Netmd do
   @spec device_status(Device.t()) :: {:ok, map()} | {:error, term()}
   defdelegate device_status(device), to: Commands
 
-  @doc "Full disc listing. See `Netmd.Commands.list_content/1`."
-  @spec list_content(Device.t()) :: {:ok, Netmd.Disc.t()} | {:error, term()}
+  @doc "Full disc listing. See `NetMD.Commands.list_content/1`."
+  @spec list_content(Device.t()) :: {:ok, NetMD.Disc.t()} | {:error, term()}
   defdelegate list_content(device), to: Commands
 
   @doc "Start playback."
@@ -83,7 +83,7 @@ defmodule Netmd do
           {:ok, non_neg_integer()} | {:error, term()}
   defdelegate goto_track(device, track), to: Interface
 
-  @doc "Seek to a time within a track. See `Netmd.Interface.goto_time/3`."
+  @doc "Seek to a time within a track. See `NetMD.Interface.goto_time/3`."
   @spec goto_time(Device.t(), non_neg_integer(), keyword()) :: :ok | {:error, term()}
   defdelegate goto_time(device, track, opts \\ []), to: Interface
 
@@ -104,7 +104,7 @@ defmodule Netmd do
           :ok | {:error, term()}
   defdelegate move_track(device, source, dest), to: Interface
 
-  @doc "Rename the disc, preserving groups. See `Netmd.Commands.rename_disc/3`."
+  @doc "Rename the disc, preserving groups. See `NetMD.Commands.rename_disc/3`."
   @spec rename_disc(Device.t(), String.t(), keyword()) :: :ok | {:error, term()}
   defdelegate rename_disc(device, name, opts \\ []), to: Commands
 
@@ -115,18 +115,18 @@ defmodule Netmd do
     to: Interface,
     as: :set_track_title
 
-  @doc "Download a track to the disc. See `Netmd.Commands.download/3`."
-  @spec download(Device.t(), Netmd.Track.t(), keyword()) :: {:ok, map()} | {:error, term()}
+  @doc "Download a track to the disc. See `NetMD.Commands.download/3`."
+  @spec download(Device.t(), NetMD.Track.t(), keyword()) :: {:ok, map()} | {:error, term()}
   defdelegate download(device, track, opts \\ []), to: Commands
 
-  @doc "Upload a track from the disc (MZ-RH1 only). See `Netmd.Commands.upload/3`."
+  @doc "Upload a track from the disc (MZ-RH1 only). See `NetMD.Commands.upload/3`."
   @spec upload(Device.t(), non_neg_integer(), keyword()) :: {:ok, map()} | {:error, term()}
   defdelegate upload(device, track, opts \\ []), to: Commands
 
   @doc """
   Enter factory mode for direct memory access and patching. Dangerous;
-  see `Netmd.Factory`.
+  see `NetMD.Factory`.
   """
-  @spec factory(Device.t()) :: {:ok, Netmd.Factory.t()} | {:error, term()}
-  defdelegate factory(device), to: Netmd.Factory, as: :open
+  @spec factory(Device.t()) :: {:ok, NetMD.Factory.t()} | {:error, term()}
+  defdelegate factory(device), to: NetMD.Factory, as: :open
 end

@@ -5,7 +5,7 @@
 # virtio-9p + KVM) but shares the sprawl PARENT directory so both the netmd
 # and circuits_usb checkouts are visible in the guest. That lets the guest
 # build the circuits_usb NIF, load dummy_hcd, run the FunctionFS gadget
-# (Netmd.Simulator.Gadget) and drive it with the real transport -- both
+# (NetMD.Simulator.Gadget) and drive it with the real transport -- both
 # sides of the USB link in one VM, no hardware.
 #
 # Subcommands:

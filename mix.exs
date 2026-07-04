@@ -1,4 +1,4 @@
-defmodule Netmd.MixProject do
+defmodule NetMD.MixProject do
   use Mix.Project
 
   def project do
@@ -9,7 +9,7 @@ defmodule Netmd.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       deps: deps(),
-      name: "Netmd",
+      name: "NetMD",
       description: "Drive MiniDisc recorders over NetMD USB",
       docs: docs(),
       package: package(),

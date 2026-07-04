@@ -1,10 +1,10 @@
-defmodule Netmd.TitlesTest do
+defmodule NetMD.TitlesTest do
   use ExUnit.Case, async: true
 
-  alias Netmd.SJIS
-  alias Netmd.Titles
+  alias NetMD.SJIS
+  alias NetMD.Titles
 
-  doctest Netmd.SJIS
+  doctest NetMD.SJIS
 
   vectors =
     "../fixtures/title_vectors.json"

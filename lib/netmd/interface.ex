@@ -1,9 +1,9 @@
-defmodule Netmd.Interface do
+defmodule NetMD.Interface do
   @moduledoc """
   The NetMD command set, ported from netmd-js.
 
-  Every command is a query built with `Netmd.Query`, sent through
-  `Netmd.Device` with a status byte prepended, and a reply parsed the same
+  Every command is a query built with `NetMD.Query`, sent through
+  `NetMD.Device` with a status byte prepended, and a reply parsed the same
   way. Replies carry an AV/C response status: `accepted`, `implemented`
   and late `interim` responses succeed; `not_implemented` and `rejected`
   become error tuples; `interim` is retried with backoff.
@@ -11,12 +11,12 @@ defmodule Netmd.Interface do
   Track numbers are zero-based, as in the reference implementations.
   """
 
-  alias Netmd.Crypto
-  alias Netmd.Device
-  alias Netmd.EKB
-  alias Netmd.Query
-  alias Netmd.SJIS
-  alias Netmd.Titles
+  alias NetMD.Crypto
+  alias NetMD.Device
+  alias NetMD.EKB
+  alias NetMD.Query
+  alias NetMD.SJIS
+  alias NetMD.Titles
 
   @type error :: {:error, term()}
 
@@ -712,7 +712,7 @@ defmodule Netmd.Interface do
 
   @doc """
   Set the raw disc title. The title is sanitized; group markup must
-  already be in place (see `Netmd.Commands.rename_disc/3` for the
+  already be in place (see `NetMD.Commands.rename_disc/3` for the
   friendly version).
   """
   @spec set_disc_title(Device.t(), String.t(), keyword()) :: :ok | error()
@@ -940,7 +940,7 @@ defmodule Netmd.Interface do
   Read a track's raw audio data off the disc. Only the MZ-RH1 (and M200)
   supports this. Returns the disc format byte, frame count and data.
 
-  Options are passed through to `Netmd.Device.read_bulk/3` (`:chunk_size`,
+  Options are passed through to `NetMD.Device.read_bulk/3` (`:chunk_size`,
   `:progress`, `:timeout`).
   """
   @spec save_track_to_binary(Device.t(), non_neg_integer(), keyword()) ::
@@ -1104,7 +1104,7 @@ defmodule Netmd.Interface do
   Stream encrypted track packets to the device.
 
   `packets` is an enumerable of `{key, iv, data}` tuples as produced by
-  `Netmd.Track.packets/1`. Returns the new track number and the
+  `NetMD.Track.packets/1`. Returns the new track number and the
   decrypted UUID and content ID the device reports.
 
   Options:

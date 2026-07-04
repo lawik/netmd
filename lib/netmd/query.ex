@@ -1,4 +1,4 @@
-defmodule Netmd.Query do
+defmodule NetMD.Query do
   @moduledoc """
   The NetMD query DSL: build command payloads and parse replies from
   printf/scanf-like format strings, as used by netmd-js and libnetmd.
@@ -25,15 +25,15 @@ defmodule Netmd.Query do
 
   ## Examples
 
-      iex> Netmd.Query.format("1808 %b 00", [2])
+      iex> NetMD.Query.format("1808 %b 00", [2])
       <<0x18, 0x08, 0x02, 0x00>>
 
-      iex> Netmd.Query.scan(<<0x18, 0x08, 0x02, 0x00>>, "1808 %b 00")
+      iex> NetMD.Query.scan(<<0x18, 0x08, 0x02, 0x00>>, "1808 %b 00")
       {:ok, [2]}
   """
 
   defmodule ScanError do
-    @moduledoc "Raised by `Netmd.Query.scan!/2` when a reply does not match."
+    @moduledoc "Raised by `NetMD.Query.scan!/2` when a reply does not match."
     defexception [:message]
   end
 
@@ -68,7 +68,7 @@ defmodule Netmd.Query do
   end
 
   @doc """
-  Same as `scan/2` but raises `Netmd.Query.ScanError` on mismatch.
+  Same as `scan/2` but raises `NetMD.Query.ScanError` on mismatch.
   """
   @spec scan!(binary(), String.t()) :: [value()]
   def scan!(data, format) do
@@ -87,10 +87,10 @@ defmodule Netmd.Query do
   @doc """
   Encode a non-negative integer as binary-coded decimal in `length` bytes.
 
-      iex> Netmd.Query.int_to_bcd(24, 1)
+      iex> NetMD.Query.int_to_bcd(24, 1)
       <<0x24>>
 
-      iex> Netmd.Query.int_to_bcd(9999, 2)
+      iex> NetMD.Query.int_to_bcd(9999, 2)
       <<0x99, 0x99>>
   """
   @spec int_to_bcd(non_neg_integer(), pos_integer()) :: binary()
@@ -109,7 +109,7 @@ defmodule Netmd.Query do
   @doc """
   Decode a binary-coded decimal binary to an integer.
 
-      iex> Netmd.Query.bcd_to_int(<<0x99, 0x99>>)
+      iex> NetMD.Query.bcd_to_int(<<0x99, 0x99>>)
       9999
   """
   @spec bcd_to_int(binary()) :: non_neg_integer()

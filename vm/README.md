@@ -2,16 +2,16 @@
 
 Two ways to exercise the library without a real MiniDisc recorder:
 
-## 1. In-process, no VM or root (`Netmd.Simulator`)
+## 1. In-process, no VM or root (`NetMD.Simulator`)
 
-`Netmd.Simulator` is a `Netmd.Transport` that decodes the NetMD protocol
+`NetMD.Simulator` is a `NetMD.Transport` that decodes the NetMD protocol
 and holds disc state. The whole library runs against it in the BEAM:
 
 ```elixir
-{:ok, device} = Netmd.open(transport: Netmd.Simulator)
-{:ok, disc} = Netmd.list_content(device)
-:ok = Netmd.rename_disc(device, "Mixtape")
-{:ok, %{track: n}} = Netmd.download(device, %Netmd.Track{
+{:ok, device} = NetMD.open(transport: NetMD.Simulator)
+{:ok, disc} = NetMD.list_content(device)
+:ok = NetMD.rename_disc(device, "Mixtape")
+{:ok, %{track: n}} = NetMD.download(device, %NetMD.Track{
   title: "New", format: :lp4, data: data
 })
 ```
@@ -19,12 +19,12 @@ and holds disc state. The whole library runs against it in the BEAM:
 This is what the `test/netmd/simulator_test.exs` suite drives. No USB is
 involved, so it will not catch bugs in the `CircuitsUsb` transport layer.
 
-## 2. Real USB, both sides in one VM (`Netmd.Simulator.Gadget`)
+## 2. Real USB, both sides in one VM (`NetMD.Simulator.Gadget`)
 
 To exercise the real usbfs transport, the simulator brain is presented as
 an actual USB device through `CircuitsUsb.Gadget` + `CircuitsUsb.FunctionFs`
 (FunctionFS, not raw-gadget). With `dummy_hcd` loaded, the gadget and a
-host driving `Netmd.Transport.Usb` run in the same machine.
+host driving `NetMD.Transport.Usb` run in the same machine.
 
 This needs root and a Linux gadget stack, so it runs in a throwaway VM
 that reuses the circuits_usb harness (dummy_hcd, Elixir provisioning).
@@ -55,8 +55,8 @@ outcome and prints `DEMO_OK` on success.
 
 | Piece | Side | Mechanism |
 |-------|------|-----------|
-| `Netmd.Simulator.Gadget` | device | FunctionFS over `dummy_udc.0` |
-| `Netmd` facade + `Netmd.Transport.Usb` | host | usbfs over the `dummy_hcd` host bus |
+| `NetMD.Simulator.Gadget` | device | FunctionFS over `dummy_udc.0` |
+| `NetMD` facade + `NetMD.Transport.Usb` | host | usbfs over the `dummy_hcd` host bus |
 | the kernel | link | `dummy_hcd` loops device ↔ host |
 
 ### Status

@@ -1,4 +1,4 @@
-defmodule Netmd.Devices do
+defmodule NetMD.Devices do
   @moduledoc """
   Known NetMD USB devices, from the netmd-js device table.
   """

@@ -1,6 +1,6 @@
-defmodule Netmd.MockTransport do
+defmodule NetMD.MockTransport do
   @moduledoc """
-  Scripted `Netmd.Transport` for tests.
+  Scripted `NetMD.Transport` for tests.
 
   A script is a list of `{expected_call, response}` steps consumed in
   order. Expected calls:
@@ -11,10 +11,10 @@ defmodule Netmd.MockTransport do
       {:bulk_out, data}
 
   Start it with `start_script/1` and pass the pid as the `:script` option
-  to `Netmd.Device.open/1` together with `transport: Netmd.MockTransport`.
+  to `NetMD.Device.open/1` together with `transport: NetMD.MockTransport`.
   """
 
-  @behaviour Netmd.Transport
+  @behaviour NetMD.Transport
 
   @type step :: {tuple(), term()}
 
@@ -26,7 +26,7 @@ defmodule Netmd.MockTransport do
   @spec remaining(pid()) :: [step()]
   def remaining(pid), do: Agent.get(pid, & &1)
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def open(opts) do
     pid = Keyword.fetch!(opts, :script)
 
@@ -38,30 +38,30 @@ defmodule Netmd.MockTransport do
     {:ok, pid, info}
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def list(opts) do
     Keyword.get(opts, :devices, [])
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def close(_pid), do: :ok
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def control_in(pid, request, _value, _index, length) do
     respond(pid, {:control_in, request, length})
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def control_out(pid, request, _value, _index, data) do
     respond(pid, {:control_out, request, data})
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def bulk_in(pid, length, _timeout) do
     respond(pid, {:bulk_in, length})
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def bulk_out(pid, data, _timeout) do
     respond(pid, {:bulk_out, data})
   end

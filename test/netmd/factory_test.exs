@@ -1,12 +1,12 @@
-defmodule Netmd.FactoryTest do
+defmodule NetMD.FactoryTest do
   use ExUnit.Case, async: true
 
-  alias Netmd.Crypto
-  alias Netmd.Device
-  alias Netmd.Factory
-  alias Netmd.Factory.Commands
-  alias Netmd.MockTransport
-  alias Netmd.Query
+  alias NetMD.Crypto
+  alias NetMD.Device
+  alias NetMD.Factory
+  alias NetMD.Factory.Commands
+  alias NetMD.MockTransport
+  alias NetMD.Query
 
   @clean_poll {{:control_in, 0x01, 4}, {:ok, <<0, 0, 0, 0>>}}
 

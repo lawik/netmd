@@ -1,17 +1,17 @@
-defmodule Netmd.Simulator do
+defmodule NetMD.Simulator do
   @moduledoc """
   A virtual NetMD device that runs the whole library in-process.
 
-  This is a `Netmd.Transport` backed by a `GenServer` that decodes the
+  This is a `NetMD.Transport` backed by a `GenServer` that decodes the
   NetMD control and bulk protocol and keeps disc state, so you can drive
   the real library against a simulated recorder without any USB, VM or
   root access:
 
-      {:ok, device} = Netmd.open(transport: Netmd.Simulator)
-      {:ok, disc} = Netmd.list_content(device)
-      :ok = Netmd.play(device)
+      {:ok, device} = NetMD.open(transport: NetMD.Simulator)
+      {:ok, disc} = NetMD.list_content(device)
+      :ok = NetMD.play(device)
 
-  Pass `disc: %Netmd.Simulator.Disc{...}` to `open/1` to start from a
+  Pass `disc: %NetMD.Simulator.Disc{...}` to `open/1` to start from a
   custom disc; the default is a small demo disc. State survives across
   calls and mutates in response to edits and downloads, so a listing after
   a rename or download reflects the change.
@@ -22,15 +22,15 @@ defmodule Netmd.Simulator do
   answer `not implemented`, which surfaces as a clear error.
   """
 
-  @behaviour Netmd.Transport
+  @behaviour NetMD.Transport
 
   use GenServer
 
-  alias Netmd.Crypto
-  alias Netmd.EKB
-  alias Netmd.Query
-  alias Netmd.Simulator.Disc
-  alias Netmd.SJIS
+  alias NetMD.Crypto
+  alias NetMD.EKB
+  alias NetMD.Query
+  alias NetMD.Simulator.Disc
+  alias NetMD.SJIS
 
   # AV/C response status bytes (first byte of every reply).
   @accepted 0x09
@@ -47,7 +47,7 @@ defmodule Netmd.Simulator do
   }
 
   defmodule Disc do
-    @moduledoc "The virtual disc a `Netmd.Simulator` presents."
+    @moduledoc "The virtual disc a `NetMD.Simulator` presents."
 
     defstruct present: true,
               writable: true,
@@ -102,8 +102,8 @@ defmodule Netmd.Simulator do
   @doc """
   Start the device brain as a standalone process.
 
-  The same process serves both this module's `Netmd.Transport` callbacks
-  and `Netmd.Simulator.Gadget`. Options: `:disc`, `:vendor_id`,
+  The same process serves both this module's `NetMD.Transport` callbacks
+  and `NetMD.Simulator.Gadget`. Options: `:disc`, `:vendor_id`,
   `:product_id`, `:name`.
   """
   @spec start_link(keyword()) :: GenServer.on_start()
@@ -119,7 +119,7 @@ defmodule Netmd.Simulator do
 
   ## Transport behaviour
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def open(opts) do
     with {:ok, pid} <- start_link(opts) do
       {:ok, pid,
@@ -130,7 +130,7 @@ defmodule Netmd.Simulator do
     end
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def list(opts \\ []) do
     [
       %{
@@ -142,21 +142,21 @@ defmodule Netmd.Simulator do
     ]
   end
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def close(pid), do: GenServer.stop(pid)
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def control_in(pid, request, _value, _index, length),
     do: GenServer.call(pid, {:control_in, request, length})
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def control_out(pid, request, _value, _index, data),
     do: GenServer.call(pid, {:control_out, request, data})
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def bulk_in(pid, length, _timeout), do: GenServer.call(pid, {:bulk_in, length})
 
-  @impl Netmd.Transport
+  @impl NetMD.Transport
   def bulk_out(pid, data, _timeout), do: GenServer.call(pid, {:bulk_out, data})
 
   ## Server

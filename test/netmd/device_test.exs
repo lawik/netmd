@@ -1,8 +1,8 @@
-defmodule Netmd.DeviceTest do
+defmodule NetMD.DeviceTest do
   use ExUnit.Case, async: true
 
-  alias Netmd.Device
-  alias Netmd.MockTransport
+  alias NetMD.Device
+  alias NetMD.MockTransport
 
   defp open!(script, opts \\ []) do
     {:ok, pid} = MockTransport.start_script(script)
@@ -151,7 +151,7 @@ defmodule Netmd.DeviceTest do
 
   test "list raises for a transport that cannot enumerate" do
     defmodule NoListTransport do
-      @behaviour Netmd.Transport
+      @behaviour NetMD.Transport
       def open(_opts), do: {:error, :nope}
       def close(_), do: :ok
       def control_in(_, _, _, _, _), do: {:error, :nope}

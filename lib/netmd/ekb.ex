@@ -1,4 +1,4 @@
-defmodule Netmd.EKB do
+defmodule NetMD.EKB do
   @moduledoc """
   Enabling Key Blocks for the NetMD secure session, from netmd-js.
 

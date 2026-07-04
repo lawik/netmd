@@ -1,4 +1,4 @@
-defmodule Netmd.SJIS do
+defmodule NetMD.SJIS do
   @moduledoc """
   Shift-JIS codec for NetMD titles.
 
@@ -47,10 +47,10 @@ defmodule Netmd.SJIS do
   @doc """
   Encode a UTF-8 string to Shift-JIS bytes.
 
-      iex> Netmd.SJIS.encode("abc")
+      iex> NetMD.SJIS.encode("abc")
       "abc"
 
-      iex> Netmd.SJIS.encode("カナ")
+      iex> NetMD.SJIS.encode("カナ")
       <<0x83, 0x4A, 0x83, 0x69>>
   """
   @spec encode(String.t()) :: binary()
@@ -69,7 +69,7 @@ defmodule Netmd.SJIS do
   @doc """
   Decode Shift-JIS bytes to a UTF-8 string.
 
-      iex> Netmd.SJIS.decode(<<0x83, 0x4A, 0x83, 0x69>>)
+      iex> NetMD.SJIS.decode(<<0x83, 0x4A, 0x83, 0x69>>)
       "カナ"
   """
   @spec decode(binary()) :: String.t()

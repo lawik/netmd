@@ -1,10 +1,10 @@
-defmodule Netmd.Transport do
+defmodule NetMD.Transport do
   @moduledoc """
-  Behaviour for the USB plumbing underneath `Netmd.Device`.
+  Behaviour for the USB plumbing underneath `NetMD.Device`.
 
   NetMD devices speak vendor-specific control transfers on the default
   endpoint plus one bulk IN and one bulk OUT endpoint. Implemented by
-  `Netmd.Transport.Usb` for real hardware and by a scripted mock in the
+  `NetMD.Transport.Usb` for real hardware and by a scripted mock in the
   test suite.
   """
 

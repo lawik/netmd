@@ -1,9 +1,9 @@
-defmodule Netmd.QueryTest do
+defmodule NetMD.QueryTest do
   use ExUnit.Case, async: true
 
-  alias Netmd.Query
+  alias NetMD.Query
 
-  doctest Netmd.Query
+  doctest NetMD.Query
 
   # Cases ported from netmd-js src/query-utils.test.ts
 

@@ -1,4 +1,4 @@
-defmodule Netmd.Session do
+defmodule NetMD.Session do
   @moduledoc """
   The secure session needed to download tracks, ported from netmd-js's
   MDSession.
@@ -6,16 +6,16 @@ defmodule Netmd.Session do
   Negotiates a session key by sending an enabling key block and
   exchanging nonces, then encrypts and streams track data.
 
-      {:ok, session} = Netmd.Session.start(device)
-      {:ok, %{track: n}} = Netmd.Session.download_track(session, track)
-      :ok = Netmd.Session.close(session)
+      {:ok, session} = NetMD.Session.start(device)
+      {:ok, %{track: n}} = NetMD.Session.download_track(session, track)
+      :ok = NetMD.Session.close(session)
   """
 
-  alias Netmd.Crypto
-  alias Netmd.Device
-  alias Netmd.EKB
-  alias Netmd.Interface
-  alias Netmd.Track
+  alias NetMD.Crypto
+  alias NetMD.Device
+  alias NetMD.EKB
+  alias NetMD.Interface
+  alias NetMD.Track
 
   @enforce_keys [:device, :key]
   defstruct [:device, :key]
@@ -51,7 +51,7 @@ defmodule Netmd.Session do
 
     * `:disc_format` - override the disc format byte derived from the
       track's wire format
-    * `:progress` and `:settle_ms` - see `Netmd.Interface.send_track/8`
+    * `:progress` and `:settle_ms` - see `NetMD.Interface.send_track/8`
   """
   @spec download_track(t(), Track.t(), keyword()) ::
           {:ok, %{track: non_neg_integer(), uuid: binary(), ccid: binary()}}

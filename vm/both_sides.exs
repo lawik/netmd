@@ -1,8 +1,8 @@
 # Both sides of a NetMD USB link in one BEAM.
 #
-# Starts Netmd.Simulator.Gadget (the device, over FunctionFS on dummy_udc),
+# Starts NetMD.Simulator.Gadget (the device, over FunctionFS on dummy_udc),
 # waits for the dummy_hcd host side to enumerate it, then drives it with the
-# REAL Netmd.Transport.Usb over usbfs -- exercising the whole library and the
+# REAL NetMD.Transport.Usb over usbfs -- exercising the whole library and the
 # CircuitsUsb transport with no hardware. Run as root in the netmd VM:
 #
 #   sudo mix run vm/both_sides.exs
@@ -36,7 +36,7 @@ end
 IO.puts("== device side: starting FunctionFS gadget ==")
 
 {:ok, gadget} =
-  Netmd.Simulator.Gadget.start_link(
+  NetMD.Simulator.Gadget.start_link(
     udc: "dummy_udc.0",
     vendor_id: vendor_id,
     product_id: product_id
@@ -56,35 +56,35 @@ IO.puts("  found #{length(known)} matching device(s) on usbfs")
 
 result =
   try do
-    device = step.("open (real transport)", fn -> Netmd.open(vendor_id: vendor_id, product_id: product_id) end)
+    device = step.("open (real transport)", fn -> NetMD.open(vendor_id: vendor_id, product_id: product_id) end)
 
     case device do
-      %Netmd.Device{} ->
-        IO.puts("  device name: #{Netmd.Device.name(device)}")
+      %NetMD.Device{} ->
+        IO.puts("  device name: #{NetMD.Device.name(device)}")
 
-        disc = step.("list_content", fn -> Netmd.list_content(device) end)
+        disc = step.("list_content", fn -> NetMD.list_content(device) end)
 
-        if match?(%Netmd.Disc{}, disc) do
+        if match?(%NetMD.Disc{}, disc) do
           IO.puts("    title=#{inspect(disc.title)} tracks=#{disc.track_count} writable=#{disc.writable}")
 
-          for t <- Netmd.Disc.tracks(disc) do
+          for t <- NetMD.Disc.tracks(disc) do
             IO.puts("    - #{t.index}: #{inspect(t.title)} (#{t.encoding})")
           end
         end
 
-        step.("device_status", fn -> Netmd.device_status(device) end)
-        step.("rename_disc \"Made In A VM\"", fn -> Netmd.rename_disc(device, "Made In A VM") end)
+        step.("device_status", fn -> NetMD.device_status(device) end)
+        step.("rename_disc \"Made In A VM\"", fn -> NetMD.rename_disc(device, "Made In A VM") end)
 
-        relisted = step.("list_content (after rename)", fn -> Netmd.list_content(device) end)
-        if match?(%Netmd.Disc{}, relisted), do: IO.puts("    title now #{inspect(relisted.title)}")
+        relisted = step.("list_content (after rename)", fn -> NetMD.list_content(device) end)
+        if match?(%NetMD.Disc{}, relisted), do: IO.puts("    title now #{inspect(relisted.title)}")
 
-        track = %Netmd.Track{title: "VM Upload", format: :lp4, data: :binary.copy(<<0x11>>, 96)}
-        step.("download a track", fn -> Netmd.download(device, track, settle_ms: 0) end)
+        track = %NetMD.Track{title: "VM Upload", format: :lp4, data: :binary.copy(<<0x11>>, 96)}
+        step.("download a track", fn -> NetMD.download(device, track, settle_ms: 0) end)
 
-        after_dl = step.("list_content (after download)", fn -> Netmd.list_content(device) end)
-        if match?(%Netmd.Disc{}, after_dl), do: IO.puts("    tracks now #{after_dl.track_count}")
+        after_dl = step.("list_content (after download)", fn -> NetMD.list_content(device) end)
+        if match?(%NetMD.Disc{}, after_dl), do: IO.puts("    tracks now #{after_dl.track_count}")
 
-        Netmd.close(device)
+        NetMD.close(device)
         :ok
 
       _ ->
@@ -98,5 +98,5 @@ result =
   end
 
 IO.puts("== teardown ==")
-Netmd.Simulator.Gadget.stop(gadget)
+NetMD.Simulator.Gadget.stop(gadget)
 IO.puts(if result == :ok, do: "DEMO_OK", else: "DEMO_INCOMPLETE")

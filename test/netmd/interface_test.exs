@@ -1,10 +1,10 @@
-defmodule Netmd.InterfaceTest do
+defmodule NetMD.InterfaceTest do
   use ExUnit.Case, async: true
 
-  alias Netmd.Device
-  alias Netmd.Interface
-  alias Netmd.MockTransport
-  alias Netmd.Query
+  alias NetMD.Device
+  alias NetMD.Interface
+  alias NetMD.MockTransport
+  alias NetMD.Query
 
   @clean_poll {{:control_in, 0x01, 4}, {:ok, <<0, 0, 0, 0>>}}
 

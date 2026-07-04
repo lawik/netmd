@@ -1,15 +1,15 @@
-defmodule Netmd.Device do
+defmodule NetMD.Device do
   @moduledoc """
   The fundamental NetMD USB exchange protocol, ported from netmd-js.
 
   Commands go out as vendor control transfers; replies are fetched by
   polling the device for a reply length and then reading that many bytes.
   Audio data moves over the bulk endpoints. This layer carries raw
-  payloads only; `Netmd.Interface` gives them meaning.
+  payloads only; `NetMD.Interface` gives them meaning.
   """
 
-  alias Netmd.Devices
-  alias Netmd.Transport
+  alias NetMD.Devices
+  alias NetMD.Transport
 
   @enforce_keys [:transport, :handle]
   defstruct [
@@ -55,8 +55,8 @@ defmodule Netmd.Device do
 
   Options:
 
-    * `:transport` - `Netmd.Transport` implementation, defaults to
-      `Netmd.Transport.Usb`
+    * `:transport` - `NetMD.Transport` implementation, defaults to
+      `NetMD.Transport.Usb`
     * `:vendor_id`, `:product_id` - open a specific device instead of the
       first known one
 
@@ -64,7 +64,7 @@ defmodule Netmd.Device do
   """
   @spec open(keyword()) :: {:ok, t()} | {:error, term()}
   def open(opts \\ []) do
-    transport = Keyword.get(opts, :transport, Netmd.Transport.Usb)
+    transport = Keyword.get(opts, :transport, NetMD.Transport.Usb)
 
     with {:ok, handle, info} <- transport.open(opts) do
       device = %__MODULE__{
@@ -95,15 +95,15 @@ defmodule Netmd.Device do
 
   Options:
 
-    * `:transport` - `Netmd.Transport` implementation, defaults to
-      `Netmd.Transport.Usb`
+    * `:transport` - `NetMD.Transport` implementation, defaults to
+      `NetMD.Transport.Usb`
 
   Remaining options are passed to the transport. Raises `ArgumentError` for a
   transport that cannot enumerate devices.
   """
   @spec list(keyword()) :: [listing()]
   def list(opts \\ []) do
-    transport = Keyword.get(opts, :transport, Netmd.Transport.Usb)
+    transport = Keyword.get(opts, :transport, NetMD.Transport.Usb)
 
     # ensure_loaded so function_exported? sees a not-yet-loaded transport module.
     with {:module, _} <- Code.ensure_loaded(transport),

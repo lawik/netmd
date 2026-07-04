@@ -1,4 +1,4 @@
-defmodule Netmd.Crypto do
+defmodule NetMD.Crypto do
   @moduledoc """
   DES primitives for the NetMD secure session, matching the CryptoJS
   usage in netmd-js. All inputs must be multiples of the 8-byte DES block

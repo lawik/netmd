@@ -1,12 +1,12 @@
-defmodule Netmd.CommandsTest do
+defmodule NetMD.CommandsTest do
   use ExUnit.Case, async: true
 
-  alias Netmd.Audio
-  alias Netmd.Commands
-  alias Netmd.Device
-  alias Netmd.Disc
-  alias Netmd.MockTransport
-  alias Netmd.Query
+  alias NetMD.Audio
+  alias NetMD.Commands
+  alias NetMD.Device
+  alias NetMD.Disc
+  alias NetMD.MockTransport
+  alias NetMD.Query
 
   @clean_poll {{:control_in, 0x01, 4}, {:ok, <<0, 0, 0, 0>>}}
 

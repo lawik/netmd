@@ -1,8 +1,8 @@
-defmodule Netmd.CryptoTest do
+defmodule NetMD.CryptoTest do
   use ExUnit.Case, async: true
 
-  alias Netmd.Crypto
-  alias Netmd.Track
+  alias NetMD.Crypto
+  alias NetMD.Track
 
   @zero_iv <<0::64>>
 

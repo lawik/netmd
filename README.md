@@ -1,4 +1,4 @@
-# Netmd
+# NetMD
 
 Drive Sony MiniDisc recorders over NetMD USB from Elixir. A port of
 [netmd-js](https://github.com/cybercase/netmd-js) (the library behind
@@ -19,47 +19,47 @@ Linux only, no native code beyond the circuits_usb NIF.
 - Track upload from an MZ-RH1, with AEA/WAV headers ready for ffmpeg
 - Factory mode: direct RAM/EEPROM/peripheral access, firmware patching,
   raw UTOC sector read/write and the display override (dangerous; see
-  `Netmd.Factory`)
+  `NetMD.Factory`)
 
 ## Usage
 
 ```elixir
 # See every connected NetMD before picking one to open.
-for d <- Netmd.list_devices(), do: IO.puts("#{d.name} on bus #{d.bus}/#{d.address}")
+for d <- NetMD.list_devices(), do: IO.puts("#{d.name} on bus #{d.bus}/#{d.address}")
 
-{:ok, device} = Netmd.open()
+{:ok, device} = NetMD.open()
 
-{:ok, disc} = Netmd.list_content(device)
+{:ok, disc} = NetMD.list_content(device)
 IO.puts("#{disc.title}: #{disc.track_count} tracks")
 
-:ok = Netmd.play(device)
-:ok = Netmd.rename_disc(device, "Mix Tape")
+:ok = NetMD.play(device)
+:ok = NetMD.rename_disc(device, "Mix Tape")
 
 # Download audio: raw PCM (16-bit big-endian stereo, 44100 Hz) or
 # pre-encoded ATRAC3 for the LP modes.
-track = %Netmd.Track{title: "New Song", format: :lp2, data: atrac3_data}
-{:ok, %{track: n}} = Netmd.download(device, track)
+track = %NetMD.Track{title: "New Song", format: :lp2, data: atrac3_data}
+{:ok, %{track: n}} = NetMD.download(device, track)
 
-Netmd.close(device)
+NetMD.close(device)
 ```
 
 The facade delegates to layers that are usable on their own; see the
-module docs of `Netmd.Commands`, `Netmd.Interface`, `Netmd.Session`,
-`Netmd.Device`, `Netmd.Query` and `Netmd.Factory`.
+module docs of `NetMD.Commands`, `NetMD.Interface`, `NetMD.Session`,
+`NetMD.Device`, `NetMD.Query` and `NetMD.Factory`.
 
 ## Running without hardware
 
-`Netmd.Simulator` is a virtual NetMD device that decodes the protocol and
+`NetMD.Simulator` is a virtual NetMD device that decodes the protocol and
 holds disc state, so the whole library runs in-process with no USB:
 
 ```elixir
-{:ok, device} = Netmd.open(transport: Netmd.Simulator)
-{:ok, disc} = Netmd.list_content(device)
+{:ok, device} = NetMD.open(transport: NetMD.Simulator)
+{:ok, disc} = NetMD.list_content(device)
 ```
 
-To exercise the real usbfs transport too, `Netmd.Simulator.Gadget`
+To exercise the real usbfs transport too, `NetMD.Simulator.Gadget`
 presents that same brain as an actual USB device over FunctionFS; with
-`dummy_hcd` it and a host driving `Netmd.Transport.Usb` run in one VM.
+`dummy_hcd` it and a host driving `NetMD.Transport.Usb` run in one VM.
 See [`vm/README.md`](vm/README.md).
 
 ## Permissions

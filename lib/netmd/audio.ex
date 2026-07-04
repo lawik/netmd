@@ -1,4 +1,4 @@
-defmodule Netmd.Audio do
+defmodule NetMD.Audio do
   @moduledoc """
   File headers for audio uploaded from a disc, ported from netmd-js.
 

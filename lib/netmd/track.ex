@@ -1,4 +1,4 @@
-defmodule Netmd.Track do
+defmodule NetMD.Track do
   @moduledoc """
   A track to download to the recorder, ported from netmd-js's MDTrack.
 
@@ -8,7 +8,7 @@ defmodule Netmd.Track do
   key, chained CBC across chunks.
   """
 
-  alias Netmd.Crypto
+  alias NetMD.Crypto
 
   @enforce_keys [:title, :format, :data]
   defstruct [:title, :format, :data, :full_width_title, chunk_size: 0x00100000, raw_key: nil]
@@ -77,7 +77,7 @@ defmodule Netmd.Track do
   end
 
   @doc """
-  Stream of `{key, iv, encrypted_data}` packets for `Netmd.Interface.send_track/8`.
+  Stream of `{key, iv, encrypted_data}` packets for `NetMD.Interface.send_track/8`.
 
   The data is encrypted with a random key (set `:raw_key` on the struct
   for a deterministic stream); the packet key is that key unwrapped with

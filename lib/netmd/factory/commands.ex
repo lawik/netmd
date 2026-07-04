@@ -1,4 +1,4 @@
-defmodule Netmd.Factory.Commands do
+defmodule NetMD.Factory.Commands do
   @moduledoc """
   Higher-level factory operations, ported from netmd-js's factory
   commands: bracketed reads and writes, firmware patching and raw UTOC
@@ -11,9 +11,9 @@ defmodule Netmd.Factory.Commands do
 
   import Bitwise, only: [band: 2, bor: 2]
 
-  alias Netmd.Crypto
-  alias Netmd.Factory
-  alias Netmd.Query
+  alias NetMD.Crypto
+  alias NetMD.Factory
+  alias NetMD.Query
 
   @peripheral_bases %{netmd: 0x03802000, himd: 0x03804000}
 

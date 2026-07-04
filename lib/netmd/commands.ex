@@ -1,6 +1,6 @@
-defmodule Netmd.Commands do
+defmodule NetMD.Commands do
   @moduledoc """
-  High-level operations composed from `Netmd.Interface` commands, ported
+  High-level operations composed from `NetMD.Interface` commands, ported
   from netmd-js's netmd-commands.
 
   Divergence from the reference: the title-space estimation
@@ -9,13 +9,13 @@ defmodule Netmd.Commands do
   and `"null"` strings into its worst-case length estimates.
   """
 
-  alias Netmd.Audio
-  alias Netmd.Device
-  alias Netmd.Disc
-  alias Netmd.Interface
-  alias Netmd.Session
-  alias Netmd.Titles
-  alias Netmd.Track
+  alias NetMD.Audio
+  alias NetMD.Device
+  alias NetMD.Disc
+  alias NetMD.Interface
+  alias NetMD.Session
+  alias NetMD.Titles
+  alias NetMD.Track
 
   @type error :: Interface.error()
 
@@ -246,7 +246,7 @@ defmodule Netmd.Commands do
   end
 
   @doc """
-  Compile raw disc title strings with group markup from a `Netmd.Disc`,
+  Compile raw disc title strings with group markup from a `NetMD.Disc`,
   fitting as many groups as the TOC allows.
   """
   @spec compile_disc_titles(Disc.t()) :: {String.t(), String.t()}
@@ -419,7 +419,7 @@ defmodule Netmd.Commands do
   and the audio prefixed with a playable header: AEA for SP, WAV with
   the ATRAC3 format tag for LP2/LP4.
 
-  Options are passed to `Netmd.Interface.save_track_to_binary/3`.
+  Options are passed to `NetMD.Interface.save_track_to_binary/3`.
   """
   @spec upload(Device.t(), non_neg_integer(), keyword()) ::
           {:ok, %{format: byte(), data: binary()}} | error()
@@ -480,8 +480,8 @@ defmodule Netmd.Commands do
   Download a track to the disc: prepare, run a secure session, transfer,
   and release the device.
 
-  Options: `:progress`, `:settle_ms` (see `Netmd.Interface.send_track/8`),
-  `:disc_format` (see `Netmd.Session.download_track/3`) and `:attempts`
+  Options: `:progress`, `:settle_ms` (see `NetMD.Interface.send_track/8`),
+  `:disc_format` (see `NetMD.Session.download_track/3`) and `:attempts`
   (see `prepare_download/2`).
   """
   @spec download(Device.t(), Track.t(), keyword()) ::

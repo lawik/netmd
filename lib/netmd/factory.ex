@@ -1,4 +1,4 @@
-defmodule Netmd.Factory do
+defmodule NetMD.Factory do
   @moduledoc """
   The NetMD factory command set, ported from netmd-js.
 
@@ -11,15 +11,15 @@ defmodule Netmd.Factory do
   Three device families need slightly different framing, modelled as a
   tagged struct (`:netmd`, `:himd`, `:rh1`). Open one with `open/1`, which
   authenticates and detects the variant, then use the memory and device
-  functions here or the higher-level operations in `Netmd.Factory.Commands`.
+  functions here or the higher-level operations in `NetMD.Factory.Commands`.
   """
 
   import Bitwise, only: [band: 2, bor: 2, bxor: 2, bsl: 2]
 
-  alias Netmd.Device
-  alias Netmd.Interface
-  alias Netmd.Query
-  alias Netmd.SJIS
+  alias NetMD.Device
+  alias NetMD.Interface
+  alias NetMD.Query
+  alias NetMD.SJIS
 
   @enforce_keys [:device, :variant]
   defstruct [:device, :variant]
