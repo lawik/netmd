@@ -65,6 +65,7 @@
     "serialnumber",
     "usbfs",
     "dummy",
+    "playhead",
     "discformat",
     "binpack",
     "soundgroups",

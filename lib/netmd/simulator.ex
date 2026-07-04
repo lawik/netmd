@@ -158,6 +158,7 @@ defmodule Netmd.Simulator do
        product_id: config.product_id,
        state: :ready,
        track: 0,
+       position: {0, 0, 0, 0},
        reply: <<>>,
        bulk_out: <<>>,
        bulk_out_expected: 0,
@@ -356,8 +357,9 @@ defmodule Netmd.Simulator do
     {accept(Query.format("18c3 00 %b 000000", [action])), %{state | state: new_state}}
   end
 
+  # Stop: back to ready and rewind the playhead.
   defp dispatch(<<0x18, 0xC5, _::binary>>, state) do
-    {accept(Query.format("18c5 00 00000000")), %{state | state: :ready}}
+    {accept(Query.format("18c5 00 00000000")), %{state | state: :ready, position: {0, 0, 0, 0}}}
   end
 
   # Eject.
@@ -365,16 +367,37 @@ defmodule Netmd.Simulator do
     {accept(Query.format("18c1 00 6000")), %{state | disc: %{state.disc | present: false}}}
   end
 
-  # Seek to a track.
+  # Seek to a track (playhead to its start).
   defp dispatch(<<0x18, 0x50, 0xFF, 0x01, _::binary>> = query, state) do
     {:ok, [track]} = Query.scan(query, "1850 ff010000 0000 %w")
-    track = min(track, max(length(state.disc.tracks) - 1, 0))
-    {accept(Query.format("1850 00010000 0000 %w", [track])), %{state | track: track}}
+    track = clamp_track(state, track)
+    {accept(Query.format("1850 00010000 0000 %w", [track])), seek_to(state, track)}
   end
 
-  # Track change (next / previous / restart).
-  defp dispatch(<<0x18, 0x50, 0xFF, 0x10, _::binary>>, state) do
-    {accept(Query.format("1850 0010 00000000 0000")), state}
+  # Seek to a time within a track.
+  defp dispatch(<<0x18, 0x50, 0xFF, 0x00, _::binary>> = query, state) do
+    {:ok, [track, h, m, s, f]} = Query.scan(query, "1850 ff000000 0000 %w %B%B%B%B")
+    track = clamp_track(state, track)
+
+    {accept(Query.format("1850 00000000 0000 %w %B%B%B%B", [track, h, m, s, f])),
+     %{state | track: track, position: {h, m, s, f}}}
+  end
+
+  # Track change (next / previous / restart), by the direction word.
+  defp dispatch(<<0x18, 0x50, 0xFF, 0x10, _::binary>> = query, state) do
+    {:ok, [direction]} = Query.scan(query, "1850 ff10 00000000 %w")
+
+    track =
+      case direction do
+        # Track.next
+        0x8001 -> clamp_track(state, state.track + 1)
+        # Track.previous
+        0x0002 -> clamp_track(state, state.track - 1)
+        # Track.restart
+        _ -> state.track
+      end
+
+    {accept(Query.format("1850 0010 00000000 0000")), seek_to(state, track)}
   end
 
   # Erase whole disc.
@@ -607,12 +630,13 @@ defmodule Netmd.Simulator do
 
   ## State helpers
 
-  defp current_position(state) do
-    case Enum.at(state.disc.tracks, state.track) do
-      %{length: length} -> length
-      _ -> {0, 0, 0, 0}
-    end
+  defp current_position(state), do: state.position
+
+  defp clamp_track(state, track) do
+    track |> max(0) |> min(max(length(state.disc.tracks) - 1, 0))
   end
+
+  defp seek_to(state, track), do: %{state | track: track, position: {0, 0, 0, 0}}
 
   defp update_track(disc, track, wchar, title) do
     tracks =

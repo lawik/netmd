@@ -38,8 +38,56 @@ defmodule Netmd.SimulatorTest do
     assert {:ok, %{state: :playing}} = Netmd.device_status(device)
     assert :ok = Netmd.pause(device)
     assert {:ok, %{state: :paused}} = Netmd.device_status(device)
+    assert :ok = Netmd.fast_forward(device)
+    assert {:ok, %{state: :fast_forward}} = Netmd.device_status(device)
+    assert :ok = Netmd.rewind(device)
+    assert {:ok, %{state: :rewind}} = Netmd.device_status(device)
     assert :ok = Netmd.stop(device)
     assert {:ok, %{state: :ready}} = Netmd.device_status(device)
+  end
+
+  test "track navigation moves the current track" do
+    device = open!()
+    assert {:ok, %{track: 0}} = Netmd.device_status(device)
+
+    assert :ok = Netmd.next_track(device)
+    assert {:ok, %{track: 1}} = Netmd.device_status(device)
+
+    # Clamps at the last track.
+    assert :ok = Netmd.next_track(device)
+    assert {:ok, %{track: 1}} = Netmd.device_status(device)
+
+    assert :ok = Netmd.previous_track(device)
+    assert {:ok, %{track: 0}} = Netmd.device_status(device)
+
+    # Clamps at the first track.
+    assert :ok = Netmd.previous_track(device)
+    assert {:ok, %{track: 0}} = Netmd.device_status(device)
+  end
+
+  test "goto_track seeks to a track and resets the playhead" do
+    device = open!()
+    assert {:ok, 1} = Netmd.goto_track(device, 1)
+
+    assert {:ok, %{track: 1, time: %{minute: 0, second: 0, frame: 0}}} =
+             Netmd.device_status(device)
+  end
+
+  test "goto_time positions the playhead within a track" do
+    device = open!()
+    assert :ok = Netmd.goto_time(device, 1, minute: 2, second: 30, frame: 10)
+
+    assert {:ok, %{track: 1, time: %{minute: 2, second: 30, frame: 10}}} =
+             Netmd.device_status(device)
+  end
+
+  test "restart_track rewinds the current track" do
+    device = open!()
+    assert :ok = Netmd.goto_time(device, 1, minute: 1, second: 5)
+    assert :ok = Netmd.restart_track(device)
+
+    assert {:ok, %{track: 1, time: %{minute: 0, second: 0, frame: 0}}} =
+             Netmd.device_status(device)
   end
 
   test "renaming the disc is reflected in a fresh listing" do

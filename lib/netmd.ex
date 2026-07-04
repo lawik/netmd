@@ -54,6 +54,14 @@ defmodule Netmd do
   @spec stop(Device.t()) :: :ok
   defdelegate stop(device), to: Interface
 
+  @doc "Fast-forward."
+  @spec fast_forward(Device.t()) :: :ok | {:error, term()}
+  defdelegate fast_forward(device), to: Interface
+
+  @doc "Rewind."
+  @spec rewind(Device.t()) :: :ok | {:error, term()}
+  defdelegate rewind(device), to: Interface
+
   @doc "Skip to the next track."
   @spec next_track(Device.t()) :: :ok | {:error, term()}
   defdelegate next_track(device), to: Interface
@@ -62,10 +70,18 @@ defmodule Netmd do
   @spec previous_track(Device.t()) :: :ok | {:error, term()}
   defdelegate previous_track(device), to: Interface
 
+  @doc "Restart the current track."
+  @spec restart_track(Device.t()) :: :ok | {:error, term()}
+  defdelegate restart_track(device), to: Interface
+
   @doc "Seek to a track (zero-based)."
   @spec goto_track(Device.t(), non_neg_integer()) ::
           {:ok, non_neg_integer()} | {:error, term()}
   defdelegate goto_track(device, track), to: Interface
+
+  @doc "Seek to a time within a track. See `Netmd.Interface.goto_time/3`."
+  @spec goto_time(Device.t(), non_neg_integer(), keyword()) :: :ok | {:error, term()}
+  defdelegate goto_time(device, track, opts \\ []), to: Interface
 
   @doc "Eject the disc."
   @spec eject_disc(Device.t()) :: :ok | {:error, term()}
