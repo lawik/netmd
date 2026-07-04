@@ -29,12 +29,32 @@ defmodule NetMD.Transport.Managed do
   the transport is restored, not device-side session state; re-run whole
   operations, not half of one.
 
+  ## Status events
+
+  Because the manager is a serial GenServer that already owns the device, it is
+  the natural place to poll status and to serialise access. When given a
+  `:status_fun` (`NetMD.Device.open/1` injects `NetMD.Commands.device_status/1`)
+  it polls on a timer while at least one process is subscribed, and sends
+  `{:netmd_status, status}` to subscribers whenever the reading changes. The poll
+  runs inside one message handler, so it never interleaves with another manager
+  message.
+
+  A whole command/reply exchange spans several manager messages, though, so a
+  poll must not land in the middle of one. `lock/1`/`unlock/1` (used by
+  `NetMD.Device.with_lock/2`, which wraps `NetMD.Interface.send_query/3`) hold the
+  device for an exchange; the poll defers while the lock is held. The lock is
+  reentrant per process and released if its holder dies.
+
   Options (threaded through `NetMD.Device.open/1`):
 
     * `:reconnect_wait` - ms an operation waits for the device before returning
       `{:error, :disconnected}` (default `10_000`)
     * `:reconnect_poll` - ms between reopen attempts (default `500`)
     * `:base_transport` - transport to front (default `NetMD.Transport.Usb`)
+    * `:status_event_poll` - ms between status polls, or `false` to disable
+      (default `1000`)
+    * `:status_fun` - 1-arity function read to poll status with; no polling
+      without it
   """
 
   @behaviour NetMD.Transport
@@ -42,6 +62,7 @@ defmodule NetMD.Transport.Managed do
 
   @default_reconnect_wait 10_000
   @default_reconnect_poll 500
+  @default_status_poll 1000
 
   # Transfer errors (and a dead engine, mapped to :enodev) that mean the device
   # left the bus, as opposed to a recoverable transfer fault like :epipe.
@@ -90,6 +111,32 @@ defmodule NetMD.Transport.Managed do
     if function_exported?(base, :list, 1), do: base.list(opts), else: []
   end
 
+  # ---- status events and locking (run in the caller) ---------------------
+
+  @doc "Subscribe `pid` (default caller) to `{:netmd_status, status}` events."
+  @spec subscribe(pid(), pid()) :: :ok
+  def subscribe(manager, pid \\ self()) when is_pid(pid),
+    do: GenServer.call(manager, {:subscribe, pid})
+
+  @doc "Stop `pid` (default caller) receiving status events."
+  @spec unsubscribe(pid(), pid()) :: :ok
+  def unsubscribe(manager, pid \\ self()) when is_pid(pid),
+    do: GenServer.call(manager, {:unsubscribe, pid})
+
+  @doc "Hold the device for one exchange. Reentrant per process; blocks until granted."
+  @spec lock(pid()) :: :ok | :error
+  def lock(manager), do: lock_call(manager, :lock)
+
+  @doc "Release one level of the device lock."
+  @spec unlock(pid()) :: :ok | :error
+  def unlock(manager), do: lock_call(manager, :unlock)
+
+  defp lock_call(manager, message) do
+    GenServer.call(manager, message, :infinity)
+  catch
+    :exit, _ -> :error
+  end
+
   # An op waits as long as the manager needs (it enforces :reconnect_wait), and a
   # dead manager becomes a plain error rather than crashing the caller.
   defp call(pid, op) do
@@ -108,23 +155,38 @@ defmodule NetMD.Transport.Managed do
 
     case base.open(opts) do
       {:ok, handle, info} ->
-        Process.monitor(owner)
+        state = %{
+          base: base,
+          handle: handle,
+          info: info,
+          open_opts: reopen_opts(opts, info),
+          status: :connected,
+          waiters: [],
+          deadline: nil,
+          reconnect_wait: Keyword.get(opts, :reconnect_wait, @default_reconnect_wait),
+          reconnect_poll: Keyword.get(opts, :reconnect_poll, @default_reconnect_poll),
+          owner_ref: Process.monitor(owner),
+          status_fun: Keyword.get(opts, :status_fun),
+          poll_interval: poll_interval(opts),
+          subscribers: MapSet.new(),
+          last_status: nil,
+          lock_owner: nil,
+          lock_count: 0,
+          lock_ref: nil,
+          lock_waiters: :queue.new()
+        }
 
-        {:ok,
-         %{
-           base: base,
-           handle: handle,
-           info: info,
-           open_opts: reopen_opts(opts, info),
-           status: :connected,
-           waiters: [],
-           deadline: nil,
-           reconnect_wait: Keyword.get(opts, :reconnect_wait, @default_reconnect_wait),
-           reconnect_poll: Keyword.get(opts, :reconnect_poll, @default_reconnect_poll)
-         }}
+        {:ok, schedule_poll(state)}
 
       {:error, reason} ->
         {:stop, reason}
+    end
+  end
+
+  defp poll_interval(opts) do
+    case Keyword.get(opts, :status_event_poll, @default_status_poll) do
+      false -> nil
+      ms when is_integer(ms) and ms > 0 -> ms
     end
   end
 
@@ -133,6 +195,35 @@ defmodule NetMD.Transport.Managed do
 
   # Test/introspection hook: :connected | :reconnecting | :disconnected.
   def handle_call(:status, _from, state), do: {:reply, state.status, state}
+
+  def handle_call({:subscribe, pid}, _from, state) do
+    if not MapSet.member?(state.subscribers, pid), do: Process.monitor(pid)
+    {:reply, :ok, %{state | subscribers: MapSet.put(state.subscribers, pid)}}
+  end
+
+  def handle_call({:unsubscribe, pid}, _from, state),
+    do: {:reply, :ok, %{state | subscribers: MapSet.delete(state.subscribers, pid)}}
+
+  def handle_call(:lock, {pid, _}, %{lock_owner: nil} = state) do
+    {:reply, :ok, %{state | lock_owner: pid, lock_count: 1, lock_ref: Process.monitor(pid)}}
+  end
+
+  def handle_call(:lock, {pid, _}, %{lock_owner: pid} = state),
+    do: {:reply, :ok, %{state | lock_count: state.lock_count + 1}}
+
+  def handle_call(:lock, from, state),
+    do: {:noreply, %{state | lock_waiters: :queue.in(from, state.lock_waiters)}}
+
+  def handle_call(:unlock, {pid, _}, %{lock_owner: pid, lock_count: count} = state)
+      when count > 1,
+      do: {:reply, :ok, %{state | lock_count: count - 1}}
+
+  def handle_call(:unlock, {pid, _}, %{lock_owner: pid} = state) do
+    Process.demonitor(state.lock_ref, [:flush])
+    {:reply, :ok, grant_next_lock(%{state | lock_owner: nil, lock_count: 0, lock_ref: nil})}
+  end
+
+  def handle_call(:unlock, _from, state), do: {:reply, :ok, state}
 
   def handle_call({:op, op}, from, %{status: :connected} = state) do
     case run(state, op) do
@@ -167,8 +258,23 @@ defmodule NetMD.Transport.Managed do
 
   def handle_info(:reconnect, state), do: {:noreply, state}
 
-  # The owner went away without closing; release the device.
-  def handle_info({:DOWN, _ref, :process, _pid, _reason}, state), do: {:stop, :normal, state}
+  def handle_info(:poll, state), do: {:noreply, schedule_poll(poll_now(state))}
+
+  def handle_info({:DOWN, ref, :process, pid, _reason}, state) do
+    cond do
+      # The owner went away without closing; release the device.
+      ref == state.owner_ref ->
+        {:stop, :normal, state}
+
+      # The lock holder died mid-exchange; release so others (and the poll) proceed.
+      ref == state.lock_ref ->
+        {:noreply, grant_next_lock(%{state | lock_owner: nil, lock_count: 0, lock_ref: nil})}
+
+      # A subscriber exited.
+      true ->
+        {:noreply, %{state | subscribers: MapSet.delete(state.subscribers, pid)}}
+    end
+  end
 
   # The base engine died under us (device yanked). Drop to disconnected and let
   # the next operation drive reconnection, rather than polling an idle device.
@@ -185,6 +291,65 @@ defmodule NetMD.Transport.Managed do
   end
 
   # ---- internals ---------------------------------------------------------
+
+  defp schedule_poll(%{status_fun: nil} = state), do: state
+  defp schedule_poll(%{poll_interval: nil} = state), do: state
+
+  defp schedule_poll(state) do
+    Process.send_after(self(), :poll, state.poll_interval)
+    state
+  end
+
+  # Read status on the base device inside this handler, so it is atomic against
+  # every other manager message. Skip while disconnected, locked by a caller
+  # mid-exchange, or with nobody listening. Emit only when the reading changes.
+  defp poll_now(%{status: :connected, lock_owner: nil, status_fun: fun} = state)
+       when is_function(fun, 1) do
+    if MapSet.size(state.subscribers) == 0 do
+      state
+    else
+      bare = %NetMD.Device{transport: state.base, handle: state.handle}
+
+      case safe_status(fun, bare) do
+        {:ok, status} when status != state.last_status ->
+          broadcast(state.subscribers, {:netmd_status, status})
+          %{state | last_status: status}
+
+        _ ->
+          state
+      end
+    end
+  end
+
+  defp poll_now(state), do: state
+
+  defp safe_status(fun, bare) do
+    fun.(bare)
+  rescue
+    error -> {:error, error}
+  catch
+    :exit, _ -> {:error, :exit}
+  end
+
+  defp broadcast(subscribers, message), do: Enum.each(subscribers, &send(&1, message))
+
+  defp grant_next_lock(state) do
+    case :queue.out(state.lock_waiters) do
+      {{:value, {pid, _} = from}, rest} ->
+        GenServer.reply(from, :ok)
+
+        %{
+          state
+          | lock_owner: pid,
+            lock_count: 1,
+            lock_ref: Process.monitor(pid),
+            lock_waiters: rest
+        }
+
+      {:empty, _} ->
+        state
+    end
+  end
 
   defp run(%{base: base, handle: handle}, {fun, args}) do
     apply(base, fun, [handle | args])

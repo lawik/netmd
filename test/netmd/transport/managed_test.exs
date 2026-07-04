@@ -130,4 +130,46 @@ defmodule NetMD.Transport.ManagedTest do
     send(owner, :stop)
     assert_receive {:DOWN, ^mref, :process, ^pid, _}
   end
+
+  test "the lock is reentrant for its holder and exclusive to others", %{agent: agent} do
+    {:ok, pid, _info} = open(agent)
+    parent = self()
+
+    assert Managed.lock(pid) == :ok
+    # Reentrant: the same process can take it again without blocking.
+    assert Managed.lock(pid) == :ok
+
+    other = Task.async(fn -> send(parent, {:acquired, Managed.lock(pid)}) end)
+    refute_receive {:acquired, _}, 100, "another process must block while the lock is held"
+
+    # One unlock leaves it held (reentrant depth 2 -> 1).
+    assert Managed.unlock(pid) == :ok
+    refute_receive {:acquired, _}, 50
+
+    # Fully released; the waiter is granted the lock.
+    assert Managed.unlock(pid) == :ok
+    assert_receive {:acquired, :ok}, 500
+    Task.await(other)
+  end
+
+  test "a dead lock holder releases the lock", %{agent: agent} do
+    {:ok, pid, _info} = open(agent)
+    parent = self()
+
+    holder =
+      spawn(fn ->
+        Managed.lock(pid)
+        send(parent, :held)
+        Process.sleep(:infinity)
+      end)
+
+    assert_receive :held
+
+    waiter = Task.async(fn -> send(parent, {:acquired, Managed.lock(pid)}) end)
+    refute_receive {:acquired, _}, 100
+
+    Process.exit(holder, :kill)
+    assert_receive {:acquired, :ok}, 500
+    Task.await(waiter)
+  end
 end

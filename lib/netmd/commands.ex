@@ -424,11 +424,13 @@ defmodule NetMD.Commands do
   @spec upload(Device.t(), non_neg_integer(), keyword()) ::
           {:ok, %{format: byte(), data: binary()}} | error()
   def upload(device, track, opts \\ []) do
-    with {:ok, %{format: format, data: data}} <-
-           Interface.save_track_to_binary(device, track, opts),
-         {:ok, header} <- upload_header(device, track, format, data) do
-      {:ok, %{format: format, data: header <> data}}
-    end
+    Device.with_lock(device, fn ->
+      with {:ok, %{format: format, data: data}} <-
+             Interface.save_track_to_binary(device, track, opts),
+           {:ok, header} <- upload_header(device, track, format, data) do
+        {:ok, %{format: format, data: header <> data}}
+      end
+    end)
   end
 
   # SP stereo (6) and SP mono (4) get AEA headers, LP2 (2) and LP4 (0)
@@ -487,17 +489,21 @@ defmodule NetMD.Commands do
   @spec download(Device.t(), Track.t(), keyword()) ::
           {:ok, %{track: non_neg_integer(), uuid: binary(), ccid: binary()}} | error()
   def download(device, %Track{} = track, opts \\ []) do
-    with :ok <- prepare_download(device, Keyword.take(opts, [:attempts])),
-         {:ok, session} <- Session.start(device),
-         {:ok, result} <-
-           Session.download_track(
-             session,
-             track,
-             Keyword.take(opts, [:progress, :settle_ms, :disc_format])
-           ),
-         :ok <- Session.close(session),
-         :ok <- Interface.release(device) do
-      {:ok, result}
-    end
+    # Hold the device for the whole secure session so a status poll cannot slip a
+    # command into the middle of it.
+    Device.with_lock(device, fn ->
+      with :ok <- prepare_download(device, Keyword.take(opts, [:attempts])),
+           {:ok, session} <- Session.start(device),
+           {:ok, result} <-
+             Session.download_track(
+               session,
+               track,
+               Keyword.take(opts, [:progress, :settle_ms, :disc_format])
+             ),
+           :ok <- Session.close(session),
+           :ok <- Interface.release(device) do
+        {:ok, result}
+      end
+    end)
   end
 end

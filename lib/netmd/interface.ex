@@ -67,9 +67,14 @@ defmodule NetMD.Interface do
   """
   @spec send_query(Device.t(), binary(), keyword()) :: {:ok, binary()} | error()
   def send_query(device, query, opts \\ []) do
-    with :ok <- send_command(device, query, opts) do
-      read_reply(device, opts)
-    end
+    # Hold the device for the whole exchange so the status poller (or another
+    # caller) cannot slip a command between ours and its reply. A no-op unless
+    # the transport locks (the managed one does).
+    Device.with_lock(device, fn ->
+      with :ok <- send_command(device, query, opts) do
+        read_reply(device, opts)
+      end
+    end)
   end
 
   @doc "Send a query without reading the reply."

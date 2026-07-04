@@ -10,6 +10,7 @@ defmodule NetMD.Device do
 
   alias NetMD.Devices
   alias NetMD.Transport
+  alias NetMD.Transport.Managed
 
   @enforce_keys [:transport, :handle]
   defstruct [
@@ -64,12 +65,16 @@ defmodule NetMD.Device do
       `NetMD.Transport.Usb` (wrapped per `:reconnect` above)
     * `:vendor_id`, `:product_id` - open a specific device instead of the
       first known one
+    * `:status_event_poll` - with the managed transport (the default), ms
+      between background status polls that drive `subscribe/2` events, or
+      `false` to disable (default `1000`)
 
   Remaining options are passed to the transport.
   """
   @spec open(keyword()) :: {:ok, t()} | {:error, term()}
   def open(opts \\ []) do
     transport = open_transport(opts)
+    opts = with_status_opts(opts, transport)
 
     with {:ok, handle, info} <- transport.open(opts) do
       device = %__MODULE__{
@@ -95,10 +100,17 @@ defmodule NetMD.Device do
   defp open_transport(opts) do
     cond do
       transport = Keyword.get(opts, :transport) -> transport
-      Keyword.get(opts, :reconnect, true) -> NetMD.Transport.Managed
+      Keyword.get(opts, :reconnect, true) -> Managed
       true -> NetMD.Transport.Usb
     end
   end
+
+  # The managed transport runs the status poller; hand it a way to read status.
+  # Kept out of the transport layer itself (which knows nothing of commands).
+  defp with_status_opts(opts, Managed),
+    do: Keyword.put_new(opts, :status_fun, &NetMD.Commands.device_status/1)
+
+  defp with_status_opts(opts, _transport), do: opts
 
   @doc """
   List the connected NetMD devices without opening any of them.
@@ -138,6 +150,49 @@ defmodule NetMD.Device do
   @doc "Release the device."
   @spec close(t()) :: :ok
   def close(%__MODULE__{transport: transport, handle: handle}), do: transport.close(handle)
+
+  @doc """
+  Subscribe `pid` (default the caller) to `{:netmd_status, status}` events.
+
+  Only the managed transport polls status; other transports return
+  `{:error, :status_events_unavailable}`.
+  """
+  @spec subscribe(t(), pid()) :: :ok | {:error, :status_events_unavailable}
+  def subscribe(device, pid \\ self())
+
+  def subscribe(%__MODULE__{transport: Managed, handle: handle}, pid),
+    do: Managed.subscribe(handle, pid)
+
+  def subscribe(%__MODULE__{}, _pid), do: {:error, :status_events_unavailable}
+
+  @doc "Stop `pid` (default the caller) receiving status events."
+  @spec unsubscribe(t(), pid()) :: :ok | {:error, :status_events_unavailable}
+  def unsubscribe(device, pid \\ self())
+
+  def unsubscribe(%__MODULE__{transport: Managed, handle: handle}, pid),
+    do: Managed.unsubscribe(handle, pid)
+
+  def unsubscribe(%__MODULE__{}, _pid), do: {:error, :status_events_unavailable}
+
+  @doc """
+  Run `fun` holding the device lock, if the transport has one.
+
+  The managed transport serialises the whole exchange against the status poller
+  and any other holder; the lock is reentrant per process. Transports without a
+  lock (bare USB, simulator, tests) just run `fun`.
+  """
+  @spec with_lock(t(), (-> result)) :: result when result: var
+  def with_lock(%__MODULE__{transport: transport, handle: handle}, fun) do
+    if function_exported?(transport, :lock, 1) and transport.lock(handle) == :ok do
+      try do
+        fun.()
+      after
+        transport.unlock(handle)
+      end
+    else
+      fun.()
+    end
+  end
 
   @doc "Display name from the known device table."
   @spec name(t()) :: String.t()

@@ -38,6 +38,17 @@ defmodule NetMD do
   @spec close(Device.t()) :: :ok
   defdelegate close(device), to: Device
 
+  @doc """
+  Subscribe to `{:netmd_status, status}` change events from the background
+  poller. See `NetMD.Device.subscribe/2`.
+  """
+  @spec subscribe(Device.t(), pid()) :: :ok | {:error, :status_events_unavailable}
+  defdelegate subscribe(device, pid \\ self()), to: Device
+
+  @doc "Stop receiving status events. See `NetMD.Device.unsubscribe/2`."
+  @spec unsubscribe(Device.t(), pid()) :: :ok | {:error, :status_events_unavailable}
+  defdelegate unsubscribe(device, pid \\ self()), to: Device
+
   @doc "Device state (disc presence, playback state, position)."
   @spec device_status(Device.t()) :: {:ok, map()} | {:error, term()}
   defdelegate device_status(device), to: Commands
