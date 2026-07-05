@@ -17,22 +17,22 @@ and holds disc state. The whole library runs against it in the BEAM:
 ```
 
 This is what the `test/netmd/simulator_test.exs` suite drives. No USB is
-involved, so it will not catch bugs in the `CircuitsUsb` transport layer.
+involved, so it will not catch bugs in the `BodgeUSB` transport layer.
 
 ## 2. Real USB, both sides in one VM (`NetMD.Simulator.Gadget`)
 
 To exercise the real usbfs transport, the simulator brain is presented as
-an actual USB device through `CircuitsUsb.Gadget` + `CircuitsUsb.FunctionFs`
+an actual USB device through `BodgeUSBGadget` + `BodgeUSBGadget.FunctionFs`
 (FunctionFS, not raw-gadget). With `dummy_hcd` loaded, the gadget and a
 host driving `NetMD.Transport.Usb` run in the same machine.
 
 This needs root and a Linux gadget stack, so it runs in a throwaway VM
-that reuses the circuits_usb harness (dummy_hcd, Elixir provisioning).
+that reuses the bodge_usb harness (dummy_hcd, Elixir provisioning).
 
 ### Prerequisites (on the host running the VM)
 
 `qemu-system-x86_64`, `qemu-img`, `genisoimage`, KVM, and a sibling
-`../circuits_usb` checkout (the VM shares the parent directory, so both
+`../bodge_usb` checkout (the VM shares the parent directory, so both
 repos are visible in the guest).
 
 ### Steps
@@ -61,7 +61,7 @@ outcome and prints `DEMO_OK` on success.
 
 ### Status
 
-Verified in the circuits_usb VM (Ubuntu 6.8, dummy_hcd): the gadget
+Verified in the bodge_usb VM (Ubuntu 6.8, dummy_hcd): the gadget
 enumerates as a Sony NetMD device and the demo drives `list_content`,
 `device_status`, `rename_disc` and a track `download` over real usbfs,
 printing `DEMO_OK`. The host transport's expected bulk endpoints
@@ -69,7 +69,7 @@ printing `DEMO_OK`. The host transport's expected bulk endpoints
 
 ### Caveats
 
-- `dummy_hcd` must be built against the running kernel. The circuits_usb
+- `dummy_hcd` must be built against the running kernel. The bodge_usb
   harness fetches `dummy_hcd.c` for the kernel's `major.minor`; if the
   prebuilt `.ko` mismatches (symbol/version errors on `insmod`), delete
   `harness/modules/dummy_hcd/dummy_hcd.{c,ko}` and let it re-fetch.

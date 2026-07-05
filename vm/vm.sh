@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 # Disposable QEMU VM for running netmd as root against a virtual USB stack.
 #
-# Reuses the circuits_usb VM approach (Ubuntu cloud image + cloud-init +
+# Reuses the bodge_usb VM approach (Ubuntu cloud image + cloud-init +
 # virtio-9p + KVM) but shares the sprawl PARENT directory so both the netmd
-# and circuits_usb checkouts are visible in the guest. That lets the guest
-# build the circuits_usb NIF, load dummy_hcd, run the FunctionFS gadget
+# and bodge_usb checkouts are visible in the guest. That lets the guest
+# build the bodge_usb NIF, load dummy_hcd, run the FunctionFS gadget
 # (NetMD.Simulator.Gadget) and drive it with the real transport -- both
 # sides of the USB link in one VM, no hardware.
 #
@@ -19,7 +19,7 @@
 set -euo pipefail
 
 STATE="${NETMD_VM_STATE:-$HOME/.local/share/netmd-vm}"
-# Share the parent of the netmd repo so circuits_usb (a sibling) comes along.
+# Share the parent of the netmd repo so bodge_usb (a sibling) comes along.
 SHARE_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 NETMD_SUBDIR="$(basename "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)")"
 KEY="$STATE/id_ed25519"

@@ -1,6 +1,6 @@
 defmodule NetMD.Transport.Usb do
   @moduledoc """
-  `NetMD.Transport` backed by `CircuitsUsb`.
+  `NetMD.Transport` backed by `BodgeUSB`.
 
   Opens the first known NetMD device (or an explicit `:vendor_id` and
   `:product_id`), detaches any kernel driver and claims interface 0. The
@@ -11,7 +11,7 @@ defmodule NetMD.Transport.Usb do
 
   @behaviour NetMD.Transport
 
-  alias CircuitsUsb.Descriptor
+  alias BodgeUSB.Descriptor
   alias NetMD.Devices
 
   # bmRequestType: vendor type, interface recipient
@@ -26,15 +26,15 @@ defmodule NetMD.Transport.Usb do
   @impl NetMD.Transport
   def open(opts \\ []) do
     with {:ok, ref, info} <- find(opts),
-         {:ok, device} <- CircuitsUsb.open(ref) do
-      _ = CircuitsUsb.detach_driver(device, @interface)
+         {:ok, device} <- BodgeUSB.open(ref) do
+      _ = BodgeUSB.detach_driver(device, @interface)
 
-      case CircuitsUsb.claim_interface(device, @interface) do
+      case BodgeUSB.claim_interface(device, @interface) do
         :ok ->
           {:ok, device, info}
 
         {:error, reason} ->
-          CircuitsUsb.close(device)
+          BodgeUSB.close(device)
           {:error, reason}
       end
     end
@@ -42,14 +42,14 @@ defmodule NetMD.Transport.Usb do
 
   @impl NetMD.Transport
   def close(device) do
-    _ = CircuitsUsb.reset(device)
-    _ = CircuitsUsb.release_interface(device, @interface)
-    CircuitsUsb.close(device)
+    _ = BodgeUSB.reset(device)
+    _ = BodgeUSB.release_interface(device, @interface)
+    BodgeUSB.close(device)
   end
 
   @impl NetMD.Transport
   def control_in(device, request, value, index, length) do
-    CircuitsUsb.control_transfer(
+    BodgeUSB.control_transfer(
       device,
       @request_type_in,
       request,
@@ -62,7 +62,7 @@ defmodule NetMD.Transport.Usb do
 
   @impl NetMD.Transport
   def control_out(device, request, value, index, data) do
-    case CircuitsUsb.control_transfer(
+    case BodgeUSB.control_transfer(
            device,
            @request_type_out,
            request,
@@ -78,12 +78,12 @@ defmodule NetMD.Transport.Usb do
 
   @impl NetMD.Transport
   def bulk_in(device, length, timeout) do
-    CircuitsUsb.bulk_in(device, @bulk_in_endpoint, length, timeout)
+    BodgeUSB.bulk_in(device, @bulk_in_endpoint, length, timeout)
   end
 
   @impl NetMD.Transport
   def bulk_out(device, data, timeout) do
-    case CircuitsUsb.bulk_out(device, @bulk_out_endpoint, data, timeout) do
+    case BodgeUSB.bulk_out(device, @bulk_out_endpoint, data, timeout) do
       {:ok, _written} -> :ok
       {:error, reason} -> {:error, reason}
     end
@@ -91,7 +91,7 @@ defmodule NetMD.Transport.Usb do
 
   @impl NetMD.Transport
   def list(_opts \\ []) do
-    for ref <- CircuitsUsb.list_devices(),
+    for ref <- BodgeUSB.list_devices(),
         {:ok, %Descriptor.Device{vendor_id: vendor_id, product_id: product_id}} <-
           [ref.descriptor],
         Devices.known?(vendor_id, product_id) do
@@ -112,7 +112,7 @@ defmodule NetMD.Transport.Usb do
         {vendor_id, product_id} -> {vendor_id, product_id}
       end
 
-    case Enum.find_value(CircuitsUsb.list_devices(), &match_ref(&1, wanted)) do
+    case Enum.find_value(BodgeUSB.list_devices(), &match_ref(&1, wanted)) do
       nil -> {:error, :not_found}
       {ref, info} -> {:ok, ref, info}
     end

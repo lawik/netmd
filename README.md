@@ -4,8 +4,8 @@ Drive Sony MiniDisc recorders over NetMD USB from Elixir. A port of
 [netmd-js](https://github.com/cybercase/netmd-js) (the library behind
 Web MiniDisc) cross-referenced against libnetmd from
 [linux-minidisc](https://github.com/linux-minidisc/linux-minidisc),
-running on [circuits_usb](https://github.com/lawik/circuits_usb).
-Linux only, no native code beyond the circuits_usb NIF.
+running on [bodge_usb](https://github.com/lawik/bodge_usb).
+Linux only, no native code beyond the bodge_usb NIF.
 
 ## What works
 

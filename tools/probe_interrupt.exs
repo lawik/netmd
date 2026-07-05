@@ -54,16 +54,16 @@ defmodule Probe do
     remaining = deadline - System.monotonic_time(:millisecond)
 
     if remaining <= 0 do
-      _ = CircuitsUsb.cancel(engine, ref)
+      _ = BodgeUSB.cancel(engine, ref)
       count
     else
       receive do
-        {:circuits_usb, ^ref, {:ok, data}} ->
+        {:bodge_usb, ^ref, {:ok, data}} ->
           log("*** PACKET *** ep 0x#{hex(endpoint)} <- #{byte_size(data)}B  #{Base.encode16(data)}")
           {:ok, ref2} = arm(engine, endpoint)
           loop(engine, endpoint, ref2, deadline, count + 1)
 
-        {:circuits_usb, ^ref, {:error, reason}} ->
+        {:bodge_usb, ^ref, {:error, reason}} ->
           log("read ended: #{inspect(reason)} (device reset/disconnected?)")
           count
       after
@@ -75,7 +75,7 @@ defmodule Probe do
   end
 
   defp arm(engine, endpoint) do
-    CircuitsUsb.submit(engine, {:interrupt_in, endpoint, @length}, timeout: :infinity, reply_to: self())
+    BodgeUSB.submit(engine, {:interrupt_in, endpoint, @length}, timeout: :infinity, reply_to: self())
   end
 
   defp hex(byte), do: Integer.to_string(byte, 16)

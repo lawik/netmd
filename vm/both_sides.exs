@@ -3,7 +3,7 @@
 # Starts NetMD.Simulator.Gadget (the device, over FunctionFS on dummy_udc),
 # waits for the dummy_hcd host side to enumerate it, then drives it with the
 # REAL NetMD.Transport.Usb over usbfs -- exercising the whole library and the
-# CircuitsUsb transport with no hardware. Run as root in the netmd VM:
+# BodgeUSB transport with no hardware. Run as root in the netmd VM:
 #
 #   sudo mix run vm/both_sides.exs
 #
@@ -11,7 +11,8 @@
 # failure (e.g. the UDC assigning bulk endpoint addresses other than the
 # 0x81/0x02 the transport expects) is a diagnostic, not a crash.
 
-{:ok, _} = Application.ensure_all_started(:circuits_usb)
+{:ok, _} = Application.ensure_all_started(:bodge_usb)
+{:ok, _} = Application.ensure_all_started(:bodge_usb_gadget)
 {:ok, _} = Application.ensure_all_started(:netmd)
 
 vendor_id = 0x054C
@@ -48,7 +49,7 @@ Process.sleep(2500)
 IO.puts("== host side: usbfs enumeration ==")
 
 known =
-  CircuitsUsb.list_devices()
+  BodgeUSB.list_devices()
   |> Enum.map(& &1.descriptor)
   |> Enum.filter(&match?({:ok, %{vendor_id: ^vendor_id, product_id: ^product_id}}, &1))
 

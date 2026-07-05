@@ -83,7 +83,8 @@ defmodule NetMD.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:circuits_usb, github: "lawik/circuits_usb"},
+      {:bodge_usb, path: "../bodge_usb"},
+      {:bodge_usb_gadget, path: "../bodge_usb_gadget"},
       {:nstandard, "~> 0.5", runtime: false},
       {:igniter, "~> 0.6", only: [:dev, :test]},
       {:ex_doc, "~> 0.40", only: [:dev, :test], runtime: false},

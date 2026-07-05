@@ -149,7 +149,7 @@ defmodule NetMD.Transport.Managed do
 
   @impl GenServer
   def init({base, opts, owner}) do
-    # Trap exits: the base engine is linked here (CircuitsUsb.open uses
+    # Trap exits: the base engine is linked here (BodgeUSB.open uses
     # start_link), so its death must arrive as a message, not kill the manager.
     Process.flag(:trap_exit, true)
 

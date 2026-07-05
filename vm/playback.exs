@@ -6,7 +6,8 @@
 #
 #   sudo mix run vm/playback.exs
 
-{:ok, _} = Application.ensure_all_started(:circuits_usb)
+{:ok, _} = Application.ensure_all_started(:bodge_usb)
+{:ok, _} = Application.ensure_all_started(:bodge_usb_gadget)
 {:ok, _} = Application.ensure_all_started(:netmd)
 
 vendor_id = 0x054C

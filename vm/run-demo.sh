@@ -8,7 +8,7 @@
 set -euo pipefail
 
 SHARE="${NETMD_SHARE:-/mnt/sprawl}"
-CIRCUITS="${NETMD_CIRCUITS:-$SHARE/circuits_usb}"
+BODGE_USB="${NETMD_BODGE_USB:-$SHARE/bodge_usb}"
 SRC="${NETMD_SRC:-$SHARE/netmd}"
 BUILD=/root/netmd
 
@@ -16,7 +16,7 @@ export PATH="/root/.local/bin:$PATH"
 command -v mise >/dev/null 2>&1 && eval "$(mise activate bash)"
 
 echo "== ensure dummy_hcd is loaded =="
-bash "$CIRCUITS/harness/scripts/load-dummy.sh" >/dev/null
+bash "$BODGE_USB/harness/scripts/load-dummy.sh" >/dev/null
 
 echo "== copy netmd to guest-local $BUILD =="
 rm -rf "$BUILD"

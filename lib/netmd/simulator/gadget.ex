@@ -4,7 +4,7 @@ defmodule NetMD.Simulator.Gadget do
 
   Where `NetMD.Simulator` implements a `NetMD.Transport` for in-process
   use, this wires the same device brain to a Linux USB gadget over
-  `CircuitsUsb.Gadget` and `CircuitsUsb.FunctionFs`. The vendor control
+  `BodgeUSBGadget` and `BodgeUSBGadget.FunctionFs`. The vendor control
   protocol (reply-length poll, command, read-reply, factory) arrives as
   FunctionFS SETUP events; the bulk OUT endpoint (track download) is read
   by a task. The result is an actual USB device on the bus.
@@ -32,9 +32,8 @@ defmodule NetMD.Simulator.Gadget do
 
   use GenServer
 
-  alias CircuitsUsb.FunctionFs
-  alias CircuitsUsb.Gadget
-  alias CircuitsUsb.Shim
+  alias BodgeUSBGadget, as: Gadget
+  alias BodgeUSBGadget.FunctionFs
   alias NetMD.Simulator
 
   require Logger
@@ -226,7 +225,7 @@ defmodule NetMD.Simulator.Gadget do
     case FunctionFs.open_endpoint(mountpoint, @bulk_out_index) do
       {:ok, endpoint} ->
         bulk_loop(endpoint, brain)
-        Shim.close(endpoint)
+        FunctionFs.close_endpoint(endpoint)
 
       {:error, reason} ->
         Logger.warning("NetMD.Simulator.Gadget: bulk OUT open failed: #{inspect(reason)}")
@@ -234,7 +233,7 @@ defmodule NetMD.Simulator.Gadget do
   end
 
   defp bulk_loop(endpoint, brain) do
-    case Shim.read_blocking(endpoint, @bulk_chunk) do
+    case FunctionFs.read(endpoint, @bulk_chunk) do
       {:ok, <<>>} ->
         :ok
 
