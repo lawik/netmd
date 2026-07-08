@@ -7,6 +7,9 @@ Web MiniDisc) cross-referenced against libnetmd from
 running on [bodge_usb](https://github.com/lawik/bodge_usb).
 Linux only, no native code beyond the bodge_usb NIF.
 
+Implemented mostly using LLM. But proven on hardware and made with some care.
+A port of the awesome C and JS/TS work that's been done already.
+
 ## What works
 
 - Enumerate and open the ~48 known NetMD devices
