@@ -1,10 +1,12 @@
 defmodule NetMD.MixProject do
   use Mix.Project
 
+  @version "0.1.0"
+
   def project do
     [
       app: :netmd,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.20",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
@@ -28,6 +30,8 @@ defmodule NetMD.MixProject do
   def docs do
     [
       main: "readme",
+      source_url: "https://github.com/lawik/netmd",
+      source_ref: "v#{@version}",
       extras: ["README.md"]
     ]
   end
@@ -83,9 +87,9 @@ defmodule NetMD.MixProject do
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:bodge_usb, path: "../bodge_usb"},
-      {:bodge_usb_gadget, path: "../bodge_usb_gadget"},
-      {:nstandard, "~> 0.5", runtime: false},
+      {:bodge_usb, "~> 0.1.1"},
+      {:bodge_usb_gadget, "~> 0.1.0"},
+      {:nstandard, "~> 0.5", only: [:dev, :test], runtime: false},
       {:igniter, "~> 0.6", only: [:dev, :test]},
       {:ex_doc, "~> 0.40", only: [:dev, :test], runtime: false},
       {:dialyxir, "~> 1.4", only: [:dev, :test], runtime: false},
